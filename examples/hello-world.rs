@@ -5,7 +5,8 @@
 
 extern crate sorbet_cocoa as cocoa;
 
-use cocoa::{Id, ShareId, IsNSApplication, IsNSWindowController, IsNSWindow};
+use cocoa::{Duck, Id, ShareId,
+            IsNSApplication, IsNSWindowController, IsNSWindow};
 
 struct AppDelegate {
     app: ShareId<cocoa::NSApplication>,
@@ -14,14 +15,12 @@ struct AppDelegate {
 
 impl AppDelegate {
     fn new(app: ShareId<cocoa::NSApplication>) -> Self {
+        let controller = NiblessWindowController::new();
+        let controller: Id<cocoa::NSWindowController> = controller.duck();
         AppDelegate {
             app: app,
-            controller: NiblessWindowController::new().duck().share()
+            controller: controller.share()
         }
-    }
-
-    fn duck(self) -> Id<cocoa::NSApplicationDelegate> {
-        cocoa::SRBApplicationDelegate::new(Box::new(self))
     }
 }
 
@@ -103,10 +102,6 @@ impl NiblessWindowController {
         NiblessWindowController {
             super_: super_
         }
-    }
-
-    fn duck(self) -> Id<cocoa::NSWindowController> {
-        cocoa::SRBWindowController::new(Box::new(self))
     }
 }
 
