@@ -6,7 +6,7 @@ use std::sync::Once;
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {AnyObject, IsNSObject};
+use {AnyObject, Id, IsNSObject};
 
 mod srb_object;
 mod srb_application_delegate;
@@ -76,6 +76,16 @@ impl<W: SRBWrapper> Deallocator<W> {
 
     unsafe fn dealloc_ptr() -> extern "C" fn(&mut AnyObject, rt::Sel) {
         Self::dealloc as _
+    }
+}
+
+pub trait Duck<T> {
+    fn duck(self) -> T;
+}
+
+impl<T> Duck<Id<T>> for Id<T> {
+    fn duck(self) -> Id<T> {
+        self
     }
 }
 
