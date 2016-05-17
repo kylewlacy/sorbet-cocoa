@@ -3,7 +3,7 @@ use std::sync::{Once, ONCE_INIT};
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {Object, AnyObject, Id, NSObject,
+use {Duck, Object, AnyObject, Id, NSObject,
      NSApplicationDelegate, IsNSApplicationDelegate,
      NSApplication, NSNotification, SRBWrapper};
 use super::{get_boxed_ref, new_wrapper_with_boxed};
@@ -127,5 +127,15 @@ impl SRBApplicationDelegate {
             let self_ = self_ as *mut NSApplicationDelegate;
             Id::from_retained_ptr(self_)
         }
+    }
+}
+
+
+
+impl<T> Duck<Id<NSApplicationDelegate>> for T
+    where T: IsNSApplicationDelegate + 'static
+{
+    default fn duck(self) -> Id<NSApplicationDelegate> {
+        SRBApplicationDelegate::new(Box::new(self))
     }
 }

@@ -3,8 +3,8 @@ use std::sync::{Once, ONCE_INIT};
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {Object, AnyObject, NSObject, IsNSObject, SRBWrapper};
-use super::get_boxed_ref;
+use {Duck, Object, AnyObject, Id, NSObject, IsNSObject, SRBWrapper};
+use super::{get_boxed_ref, new_wrapper_with_boxed};
 
 #[repr(C)]
 pub struct SRBObject {
@@ -53,5 +53,25 @@ impl SRBWrapper for SRBObject {
         let hash = hash as extern "C" fn(&AnyObject, rt::Sel) -> usize;
 
         unsafe { class_decl.add_method(sel!(hash), hash); }
+    }
+}
+
+impl SRBObject {
+    pub fn new(object: Box<IsNSObject>) -> Id<NSObject> {
+        unsafe {
+            let self_: *mut SRBObject = new_wrapper_with_boxed(Box::new(object));
+            let self_ = self_ as *mut NSObject;
+            Id::from_retained_ptr(self_)
+        }
+    }
+}
+
+
+
+impl<T> Duck<Id<NSObject>> for T
+    where T: IsNSObject + 'static
+{
+    default fn duck(self) -> Id<NSObject> {
+        SRBObject::new(Box::new(self))
     }
 }

@@ -4,7 +4,7 @@ use std::sync::{Once, ONCE_INIT};
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {Object, AnyObject, Id, ShareId, NSObject, NSWindow,
+use {Duck, Object, AnyObject, Id, ShareId, NSObject, NSWindow,
      IsNSWindowController, NSWindowController, SRBWrapper};
 use super::{get_boxed_ref, new_wrapper_with_boxed};
 
@@ -206,5 +206,15 @@ impl SRBWindowController {
             let self_ = self_ as *mut NSWindowController;
             Id::from_retained_ptr(self_)
         }
+    }
+}
+
+
+
+impl<T> Duck<Id<NSWindowController>> for T
+    where T: IsNSWindowController + 'static
+{
+    fn duck(self) -> Id<NSWindowController> {
+        SRBWindowController::new(Box::new(self))
     }
 }
