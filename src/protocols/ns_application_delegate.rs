@@ -1,6 +1,6 @@
 use std::mem;
 use objc;
-use {into_bool, Object, AnyObject, Id, ShareId,
+use {objc_bool_to_rust, Object, AnyObject, Id, ShareId,
      IsNSObject, NSObject, SubNSObject, NSApplication, NSNotification};
 
 #[repr(usize)]
@@ -73,7 +73,7 @@ pub trait IsNSApplicationDelegate {
 impl IsNSApplicationDelegate for NSApplicationDelegate {
     fn application_will_finish_launching(&self, notification: ShareId<NSNotification>) {
         unsafe {
-            if into_bool(msg_send![self, respondsToSelector:sel!(applicationWillFinishLaunching:)]) {
+            if objc_bool_to_rust(msg_send![self, respondsToSelector:sel!(applicationWillFinishLaunching:)]) {
                 let notification_ptr: *const NSNotification = &*notification;
                 let notification_ptr = notification_ptr as *const AnyObject;
                 msg_send![self, applicationWillFinishLaunching:notification_ptr];
@@ -83,7 +83,7 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
 
     fn application_did_finish_launching(&self, notification: ShareId<NSNotification>) {
         unsafe {
-            if into_bool(msg_send![self, respondsToSelector:sel!(applicationDidFinishLaunching:)]) {
+            if objc_bool_to_rust(msg_send![self, respondsToSelector:sel!(applicationDidFinishLaunching:)]) {
                 let notification_ptr: *const NSNotification = &*notification;
                 let notification_ptr = notification_ptr as *const AnyObject;
                 msg_send![self, applicationDidFinishLaunching:notification_ptr];
@@ -95,7 +95,7 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
         -> NSApplicationTerminateReply
     {
         unsafe {
-            if into_bool(msg_send![self, respondsToSelector:sel!(applicationShouldTerminate:)]) {
+            if objc_bool_to_rust(msg_send![self, respondsToSelector:sel!(applicationShouldTerminate:)]) {
                 let sender_ptr: *const NSApplication = &*sender;
                 let sender_ptr = sender_ptr as *const AnyObject;
                 let application_should_terminate: usize = msg_send![self, applicationShouldTerminate:sender_ptr];
@@ -113,10 +113,10 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
         -> bool
     {
         unsafe {
-            if into_bool(msg_send![self, respondsToSelector:sel!(applicationShouldTerminate:)]) {
+            if objc_bool_to_rust(msg_send![self, respondsToSelector:sel!(applicationShouldTerminate:)]) {
                 let sender_ptr: *const NSApplication = &*sender;
                 let sender_ptr = sender_ptr as *const AnyObject;
-                into_bool(msg_send![self, applicationShouldTerminate:sender_ptr])
+                objc_bool_to_rust(msg_send![self, applicationShouldTerminate:sender_ptr])
             }
             else {
                 // TODO: DRY default impl for optional methods
@@ -127,7 +127,7 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
 
     fn application_will_terminate(&self, notification: ShareId<NSNotification>) {
         unsafe {
-            if into_bool(msg_send![self, respondsToSelector:sel!(applicationWillTerminate:)]) {
+            if objc_bool_to_rust(msg_send![self, respondsToSelector:sel!(applicationWillTerminate:)]) {
                 let notification_ptr: *const NSNotification = &*notification;
                 let notification_ptr = notification_ptr as *const AnyObject;
                 msg_send![self, applicationWillTerminate:notification_ptr];

@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {into_bool, into_string, AnyObject, Object};
+use {AnyObject, Object, objc_id_to_rust, objc_bool_to_rust};
 
 #[repr(C)]
 pub struct NSObject {
@@ -48,7 +48,7 @@ impl IsNSObject for NSObject {
             Some(ptr) => ptr,
             None => ptr::null()
         };
-        unsafe { into_bool(msg_send![self, isEqual:other_ptr]) }
+        unsafe { objc_bool_to_rust(msg_send![self, isEqual:other_ptr]) }
     }
 
     fn hash(&self) -> usize {
@@ -56,23 +56,23 @@ impl IsNSObject for NSObject {
     }
 
     fn is_kind_of_class(&self, class: &rt::Class) -> bool {
-        unsafe { into_bool(msg_send![self, isKindOfClass:class]) }
+        unsafe { objc_bool_to_rust(msg_send![self, isKindOfClass:class]) }
     }
 
     fn is_member_of_class(&self, class: &rt::Class) -> bool {
-        unsafe { into_bool(msg_send![self, isMemberOfClass:class]) }
+        unsafe { objc_bool_to_rust(msg_send![self, isMemberOfClass:class]) }
     }
 
     fn responds_to_selector(&self, sel: rt::Sel) -> bool {
-        unsafe { into_bool(msg_send![self, respondsToSelector:sel]) }
+        unsafe { objc_bool_to_rust(msg_send![self, respondsToSelector:sel]) }
     }
 
     fn description(&self) -> String {
-        unsafe { into_string(msg_send![self, description]) }
+        unsafe { objc_id_to_rust(msg_send![self, description]) }
     }
 
     fn debug_description(&self) -> String {
-        unsafe { into_string(msg_send![self, debugDescription]) }
+        unsafe { objc_id_to_rust(msg_send![self, debugDescription]) }
     }
 }
 

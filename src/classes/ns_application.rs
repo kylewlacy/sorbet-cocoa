@@ -1,6 +1,6 @@
 use objc;
 use objc::runtime as rt;
-use {into_bool, Object, ShareId, NSResponder, IsNSResponder,
+use {objc_bool_to_rust, Object, ShareId, NSResponder, IsNSResponder,
      NSApplicationDelegate, NSApplicationActivationPolicy};
 
 #[repr(C)]
@@ -53,7 +53,9 @@ impl IsNSApplication for NSApplication {
 
     fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool {
         let activation_policy = activation_policy as usize;
-        unsafe { into_bool(msg_send![self, setActivationPolicy:activation_policy])}
+        unsafe {
+            objc_bool_to_rust(msg_send![self, setActivationPolicy:activation_policy])
+        }
     }
 
     fn run(&self) {

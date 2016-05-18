@@ -1,6 +1,6 @@
 use std::ptr;
 use objc;
-use {into_bool, ShareId, WeakId, Object,
+use {objc_bool_to_rust, ShareId, WeakId, Object,
      AnyObject, NSObject, IsNSObject, NSEvent};
 
 #[repr(C)]
@@ -100,19 +100,19 @@ impl<T> SubNSResponder for T
 impl IsNSResponder for NSResponder {
     fn accepts_first_responder(&self) -> bool {
         unsafe {
-            into_bool(msg_send![self, acceptsFirstResponder])
+            objc_bool_to_rust(msg_send![self, acceptsFirstResponder])
         }
     }
 
     fn become_first_responder(&self) -> bool {
         unsafe {
-            into_bool(msg_send![self, becomeFirstResponder])
+            objc_bool_to_rust(msg_send![self, becomeFirstResponder])
         }
     }
 
     fn resign_first_responder(&self) -> bool {
         unsafe {
-            into_bool(msg_send![self, resignFirstResponder])
+            objc_bool_to_rust(msg_send![self, resignFirstResponder])
         }
     }
 
@@ -123,7 +123,7 @@ impl IsNSResponder for NSResponder {
             None => ptr::null()
         };
         unsafe {
-            into_bool(msg_send![self, validatesProposedResponder:responder forEvent:event_ptr])
+            objc_bool_to_rust(msg_send![self, validatesProposedResponder:responder forEvent:event_ptr])
         }
     }
 

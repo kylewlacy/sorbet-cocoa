@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {from_string, into_string, Id, ShareId, WeakId, Object, AnyObject,
+use {objc_id_to_rust, rust_to_objc_id, Id, ShareId, WeakId, Object, AnyObject,
      NSObject, NSResponder, IsNSResponder};
 
 // NOTE: CGFloat can either be an f32 or an f64
@@ -132,11 +132,11 @@ impl IsNSWindow for NSWindow {
     }
 
     fn title(&self) -> String {
-        unsafe { into_string(msg_send![self, title]) }
+        unsafe { objc_id_to_rust(msg_send![self, title]) }
     }
 
     fn set_title(&self, title: &str) {
-        unsafe { msg_send![self, setTitle:from_string(title)]; }
+        unsafe { msg_send![self, setTitle:rust_to_objc_id(title)]; }
     }
 }
 
