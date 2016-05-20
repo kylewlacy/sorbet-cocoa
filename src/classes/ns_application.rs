@@ -63,6 +63,26 @@ impl IsNSApplication for NSApplication {
     }
 }
 
+impl<T> IsNSApplication for T
+    where T: SubNSApplication + IsNSResponder
+{
+    default fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>) {
+        self.super_ns_application_ref().set_delegate(delegate);
+    }
+
+    default fn activate_ignoring_other_apps(&self, flag: bool) {
+        self.super_ns_application_ref().activate_ignoring_other_apps(flag);
+    }
+
+    default fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool {
+        self.super_ns_application_ref().set_activation_policy(activation_policy)
+    }
+
+    default fn run(&self) {
+        self.super_ns_application_ref().run();
+    }
+}
+
 pub trait SubNSApplication {
     type SuperNSApplication: IsNSApplication;
 
