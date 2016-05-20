@@ -1,7 +1,8 @@
 use std::mem;
 use objc;
-use {objc_bool_to_rust, Object, AnyObject, Id, ShareId,
-     IsNSObject, NSObject, SubNSObject, NSApplication, NSNotification};
+use {objc_bool_to_rust, objc_to_rust, Object, AnyObject, Id, ShareId,
+     IsNSObject, NSObject, SubNSObject, NSApplication, NSNotification,
+     IntoObjC, ObjCInto};
 
 #[repr(usize)]
 pub enum NSApplicationActivationPolicy {
@@ -10,12 +11,40 @@ pub enum NSApplicationActivationPolicy {
     Prohibited = 2
 }
 
+impl IntoObjC<usize> for NSApplicationActivationPolicy {
+    fn into_objc(self) -> usize {
+        self as usize
+    }
+}
+
+impl ObjCInto<NSApplicationActivationPolicy> for usize {
+    unsafe fn objc_into(self) -> NSApplicationActivationPolicy {
+        // TODO: Do this safely!
+        mem::transmute(self)
+    }
+}
+
 #[repr(usize)]
 pub enum NSApplicationTerminateReply {
     TerminateCancel = 0,
     TerminateNow = 1,
     TerminateLater = 2
 }
+
+impl IntoObjC<usize> for NSApplicationTerminateReply {
+    fn into_objc(self) -> usize {
+        self as usize
+    }
+}
+
+impl ObjCInto<NSApplicationTerminateReply> for usize {
+    unsafe fn objc_into(self) -> NSApplicationTerminateReply {
+        // TODO: Do this safely!
+        mem::transmute(self)
+    }
+}
+
+
 
 pub struct NSApplicationDelegate {
     super_: NSObject
@@ -99,8 +128,7 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
                 let sender_ptr: *const NSApplication = &*sender;
                 let sender_ptr = sender_ptr as *const AnyObject;
                 let application_should_terminate: usize = msg_send![self, applicationShouldTerminate:sender_ptr];
-                // TODO: Don't transmute!
-                mem::transmute(application_should_terminate)
+                objc_to_rust(application_should_terminate)
             }
             else {
                 // TODO: DRY default impl for optional methods
