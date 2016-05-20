@@ -36,19 +36,3 @@ pub trait Object {
     fn super_ref(&self) -> &Self::Super;
     fn super_mut(&mut self) -> &mut Self::Super;
 }
-
-// pub struct Nil(*mut rt::Object);
-//
-// pub static mut NIL: Nil = Nil(0_usize as *mut rt::Object);
-//
-// lazy_static! {
-//     static ref NIL: Nil = Nil(ptr::null_mut());
-// }
-
-
-pub struct Nil(*mut AnyObject);
-
-// TODO: Remove (if https://github.com/rust-lang/rfcs/pull/1414 gets accepted)
-pub static mut NIL: Nil = Nil(0_usize as *mut AnyObject);
-
-unsafe impl objc::Message for Nil { }
