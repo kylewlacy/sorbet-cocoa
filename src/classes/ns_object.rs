@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {AnyObject, Object, objc_id_to_rust, objc_bool_to_rust};
+use {AnyObject, AsAnyObject, Object, objc_id_to_rust, objc_bool_to_rust};
 
 #[repr(C)]
 pub struct NSObject {
@@ -18,6 +18,16 @@ impl Object for NSObject {
     }
 
     fn super_mut(&mut self) -> &mut Self::Super {
+        &mut self.super_
+    }
+}
+
+impl AsAnyObject for NSObject {
+    fn any_ref(&self) -> &AnyObject {
+        &self.super_
+    }
+
+    fn any_mut(&mut self) -> &mut AnyObject {
         &mut self.super_
     }
 }
