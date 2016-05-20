@@ -1,7 +1,7 @@
 use std::os::raw::{c_void, c_char};
 use std::ffi::CStr;
 use objc::runtime as rt;
-use AnyObject;
+use {AnyObject, Id, Object};
 
 pub unsafe fn objc_to_rust<T, U>(x: T) -> U
     where T: ObjCInto<U>
@@ -102,4 +102,60 @@ impl<T, U> IntoObjC<U> for T
     where T: Into<U>
 {
     default fn into_objc(self) -> U { self.into() }
+}
+
+
+
+pub trait AsAnyObject {
+    fn any_ref(&self) -> &AnyObject;
+    fn any_mut(&mut self) -> &mut AnyObject;
+}
+
+impl<T> AsAnyObject for T
+    where T: Object, T::Super: AsAnyObject
+{
+    fn any_ref(&self) -> &AnyObject {
+        self.super_ref().any_ref()
+    }
+
+    fn any_mut(&mut self) -> &mut AnyObject {
+        self.super_mut().any_mut()
+    }
+}
+
+pub trait SubAnyObject: Object {
+    type AnySuper: AsAnyObject;
+
+    fn any_super_ref(&self) -> &Self::AnySuper;
+    fn any_super_mut(&mut self) -> &mut Self::AnySuper;
+}
+
+impl<T> SubAnyObject for T
+    where T: Object, T::Super: AsAnyObject
+{
+    type AnySuper = T::Super;
+
+    fn any_super_ref(&self) -> &Self::AnySuper {
+        self.super_ref()
+    }
+
+    fn any_super_mut(&mut self) -> &mut Self::AnySuper {
+        self.super_mut()
+    }
+}
+
+impl<T> AsAnyObject for T
+    where T: SubAnyObject
+{
+    default fn any_ref(&self) -> &AnyObject {
+        self.any_super_ref().any_ref()
+    }
+
+    default fn any_mut(&mut self) -> &mut AnyObject {
+        self.any_super_mut().any_mut()
+    }
+}
+
+pub trait FromAnyObject: Sized {
+    unsafe fn from_any(any: *mut AnyObject) -> Id<Self>;
 }

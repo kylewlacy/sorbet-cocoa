@@ -14,7 +14,8 @@ mod protocols;
 mod wrappers;
 
 pub use conversions::{IntoObjC, rust_to_objc, rust_to_objc_id, rust_to_objc_bool,
-                      ObjCInto, objc_to_rust, objc_id_to_rust, objc_bool_to_rust};
+                      ObjCInto, objc_to_rust, objc_id_to_rust, objc_bool_to_rust,
+                      AsAnyObject, SubAnyObject, FromAnyObject};
 pub use classes::*;
 pub use protocols::*;
 pub use wrappers::*;
