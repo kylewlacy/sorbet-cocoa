@@ -63,7 +63,7 @@ impl IsNSApplication for NSApplication {
     }
 }
 
-trait SubNSApplication {
+pub trait SubNSApplication {
     type SuperNSApplication: IsNSApplication;
 
     fn super_ns_application_ref(&self) -> &Self::SuperNSApplication;
