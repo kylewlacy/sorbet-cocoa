@@ -90,8 +90,7 @@ impl<T> IsNSObject for T
     where T: SubNSObject + Object
 {
     default fn instance_class(&self) -> &rt::Class {
-        unimplemented!();
-        // self.super_ns_object_ref().instance_class()
+        self.super_ns_object_ref().instance_class()
     }
 
     default fn instance_superclass(&self) -> Option<&rt::Class> {
