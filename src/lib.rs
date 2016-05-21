@@ -37,3 +37,5 @@ pub trait Object {
     fn super_ref(&self) -> &Self::Super;
     fn super_mut(&mut self) -> &mut Self::Super;
 }
+
+pub unsafe trait RawObjCObject: objc::Message { }
