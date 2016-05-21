@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
 use {objc_bool_to_rust, ShareId, WeakId, Object,
-     AnyObject, NSObject, IsNSObject, NSEvent};
+     AnyObject, RawObjCObject, NSObject, IsNSObject, NSEvent};
 
 #[repr(C)]
 pub struct NSResponder {
@@ -9,6 +9,8 @@ pub struct NSResponder {
 }
 
 unsafe impl objc::Message for NSResponder { }
+
+unsafe impl RawObjCObject for NSResponder { }
 
 impl Object for NSResponder {
     type Super = NSObject;

@@ -2,7 +2,7 @@ use std::mem;
 use objc;
 use {objc_bool_to_rust, objc_to_rust, Object, AnyObject, Id, ShareId,
      IsNSObject, NSObject, SubNSObject, NSApplication, NSNotification,
-     IntoObjC, ObjCInto, SubAnyObject};
+     IntoObjC, ObjCInto, SubAnyObject, RawObjCObject};
 
 #[repr(usize)]
 pub enum NSApplicationActivationPolicy {
@@ -51,6 +51,8 @@ pub struct NSApplicationDelegate {
 }
 
 unsafe impl objc::Message for NSApplicationDelegate { }
+
+unsafe impl RawObjCObject for NSApplicationDelegate { }
 
 impl NSApplicationDelegate {
     pub unsafe fn from_object_unchecked(mut self_: Id<NSObject>) -> Id<Self> {

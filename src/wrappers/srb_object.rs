@@ -3,7 +3,8 @@ use std::sync::{Once, ONCE_INIT};
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {Duck, Object, AnyObject, Id, NSObject, IsNSObject, SRBWrapper};
+use {Duck, Object, AnyObject, RawObjCObject, Id,
+     NSObject, IsNSObject, SRBWrapper};
 use super::{get_boxed_ref, new_wrapper_with_boxed};
 
 #[repr(C)]
@@ -12,6 +13,8 @@ pub struct SRBObject {
 }
 
 unsafe impl objc::Message for SRBObject { }
+
+unsafe impl RawObjCObject for SRBObject { }
 
 impl Object for SRBObject {
     type Super = NSObject;

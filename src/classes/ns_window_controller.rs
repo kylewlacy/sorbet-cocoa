@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {Id, ShareId, Object, AnyObject,
+use {Id, ShareId, Object, AnyObject, RawObjCObject,
      NSObject, NSResponder, IsNSResponder, NSWindow};
 
 #[repr(C)]
@@ -22,6 +22,8 @@ impl Object for NSWindowController {
 }
 
 unsafe impl objc::Message for NSWindowController { }
+
+unsafe impl RawObjCObject for NSWindowController { }
 
 impl NSWindowController {
     pub fn new(window: Option<ShareId<NSWindow>>) -> Id<Self> {

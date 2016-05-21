@@ -1,7 +1,8 @@
 use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {AnyObject, AsAnyObject, Object, objc_id_to_rust, objc_bool_to_rust};
+use {AnyObject, AsAnyObject, RawObjCObject, Object,
+     objc_id_to_rust, objc_bool_to_rust};
 
 #[repr(C)]
 pub struct NSObject {
@@ -9,6 +10,8 @@ pub struct NSObject {
 }
 
 unsafe impl objc::Message for NSObject { }
+
+unsafe impl RawObjCObject for NSObject { }
 
 impl Object for NSObject {
     type Super = AnyObject;

@@ -2,7 +2,7 @@ use std::ptr;
 use objc;
 use objc::runtime as rt;
 use {objc_id_to_rust, rust_to_objc_id, Id, ShareId, WeakId, Object, AnyObject,
-     NSObject, NSResponder, IsNSResponder};
+     RawObjCObject, NSObject, NSResponder, IsNSResponder};
 
 // NOTE: CGFloat can either be an f32 or an f64
 pub type CGFloat = f64;
@@ -72,6 +72,8 @@ pub struct NSWindow {
 }
 
 unsafe impl objc::Message for NSWindow { }
+
+unsafe impl RawObjCObject for NSWindow { }
 
 impl Object for NSWindow {
     type Super = NSResponder;

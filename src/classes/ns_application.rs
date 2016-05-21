@@ -1,7 +1,7 @@
 use objc;
 use objc::runtime as rt;
-use {objc_bool_to_rust, Object, ShareId, NSResponder, IsNSResponder,
-     NSApplicationDelegate, NSApplicationActivationPolicy};
+use {Object, ShareId, RawObjCObject, NSResponder, IsNSResponder,
+     NSApplicationDelegate, NSApplicationActivationPolicy, objc_bool_to_rust};
 
 #[repr(C)]
 pub struct NSApplication {
@@ -9,6 +9,8 @@ pub struct NSApplication {
 }
 
 unsafe impl objc::Message for NSApplication { }
+
+unsafe impl RawObjCObject for NSApplication { }
 
 impl Object for NSApplication {
     type Super = NSResponder;

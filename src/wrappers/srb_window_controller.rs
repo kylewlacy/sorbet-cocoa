@@ -4,7 +4,7 @@ use std::sync::{Once, ONCE_INIT};
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {Duck, Object, AnyObject, Id, ShareId, NSObject, NSWindow,
+use {Duck, Object, AnyObject, RawObjCObject, Id, ShareId, NSObject, NSWindow,
      IsNSWindowController, NSWindowController, SRBWrapper};
 use super::{get_boxed_ref, new_wrapper_with_boxed};
 
@@ -14,6 +14,8 @@ pub struct SRBWindowController {
 }
 
 unsafe impl objc::Message for SRBWindowController { }
+
+unsafe impl RawObjCObject for SRBWindowController { }
 
 impl Object for SRBWindowController {
     type Super = NSWindowController;
