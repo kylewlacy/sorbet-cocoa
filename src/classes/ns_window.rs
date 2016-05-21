@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {objc_id_to_rust, rust_to_objc_id, Id, ShareId, WeakId, Object, AnyObject,
+use {objc_id_to_rust, rust_to_objc_id, Id, ShareId, Object, AnyObject,
      RawObjCObject, NSObject, NSResponder, IsNSResponder};
 
 // NOTE: CGFloat can either be an f32 or an f64
@@ -104,27 +104,25 @@ impl NSWindow {
 }
 
 pub trait IsNSWindow: IsNSResponder {
-    unsafe fn delegate(&self) -> Option<WeakId<NSObject>>;
-    unsafe fn set_delegate(&self, delegate: Option<WeakId<NSObject>>);
+    unsafe fn delegate(&self) -> Option<ShareId<NSObject>>;
+    unsafe fn set_delegate(&self, delegate: Option<ShareId<NSObject>>);
     fn title(&self) -> String;
     fn set_title(&self, title: &str);
 }
 
 impl IsNSWindow for NSWindow {
-    unsafe fn delegate(&self) -> Option<WeakId<NSObject>> {
+    unsafe fn delegate(&self) -> Option<ShareId<NSObject>> {
         let delegate: *mut AnyObject = msg_send![self, delegate];
         let delegate = delegate as *mut NSObject;
         if delegate.is_null() {
             None
         }
         else {
-            let delegate = ShareId::from_retained_ptr(delegate);
-            Some(WeakId::new(&delegate))
+            Some(ShareId::from_retained_ptr(delegate))
         }
     }
 
-    unsafe fn set_delegate(&self, delegate: Option<WeakId<NSObject>>) {
-        let delegate = delegate.and_then(|weak| weak.load());
+    unsafe fn set_delegate(&self, delegate: Option<ShareId<NSObject>>) {
         let delegate_ptr: *const NSObject = match delegate {
             Some(delegate) => &*delegate,
             None => ptr::null()
@@ -145,11 +143,11 @@ impl IsNSWindow for NSWindow {
 impl<T> IsNSWindow for T
     where T: SubNSWindow + IsNSResponder
 {
-    unsafe fn delegate(&self) -> Option<WeakId<NSObject>> {
+    unsafe fn delegate(&self) -> Option<ShareId<NSObject>> {
         self.super_ns_window_ref().delegate()
     }
 
-    unsafe fn set_delegate(&self, delegate: Option<WeakId<NSObject>>) {
+    unsafe fn set_delegate(&self, delegate: Option<ShareId<NSObject>>) {
         self.super_ns_window_ref().set_delegate(delegate);
     }
 
