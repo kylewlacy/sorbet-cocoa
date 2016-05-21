@@ -11,8 +11,8 @@ pub unsafe fn objc_to_rust<T, U>(x: T) -> U
     x.objc_into()
 }
 
-pub unsafe fn objc_id_to_rust<U>(id: &AnyObject) -> U
-    where for<'a> &'a AnyObject: ObjCInto<U>
+pub unsafe fn objc_id_to_rust<U>(id: *mut AnyObject) -> U
+    where *mut AnyObject: ObjCInto<U>
 {
     objc_to_rust(id)
 }
@@ -104,7 +104,7 @@ impl<T> ObjCInto<Option<ShareId<T>>> for *mut AnyObject
     }
 }
 
-impl<'a> ObjCInto<String> for &'a AnyObject {
+impl ObjCInto<String> for *mut AnyObject {
     unsafe fn objc_into(self) -> String {
         let c_str: *const c_void = msg_send![self, UTF8String];
         let c_str = CStr::from_ptr(c_str as *const c_char);
