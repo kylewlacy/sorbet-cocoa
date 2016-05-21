@@ -1,7 +1,7 @@
 use std::ptr;
 use objc;
-use {objc_bool_to_rust, ShareId, WeakId, Object,
-     AnyObject, RawObjCObject, NSObject, IsNSObject, NSEvent};
+use {objc_bool_to_rust, ShareId, Object, AnyObject,
+     RawObjCObject, NSObject, IsNSObject, NSEvent};
 
 #[repr(C)]
 pub struct NSResponder {
@@ -30,8 +30,8 @@ pub trait IsNSResponder: IsNSObject {
     fn resign_first_responder(&self) -> bool;
     fn validates_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool;
 
-    unsafe fn next_responder(&self) -> Option<WeakId<NSResponder>>;
-    unsafe fn set_next_responder(&self, next_responder: Option<WeakId<NSResponder>>);
+    unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>>;
+    unsafe fn set_next_responder(&self, next_responder: Option<ShareId<NSResponder>>);
 
     fn mouse_down(&self, event: ShareId<NSEvent>);
     fn mouse_dragged(&self, event: ShareId<NSEvent>);
@@ -131,20 +131,18 @@ impl IsNSResponder for NSResponder {
 
 
 
-    unsafe fn next_responder(&self) -> Option<WeakId<NSResponder>> {
+    unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>> {
         let next_responder: *mut AnyObject = msg_send![self, nextResponder];
         let next_responder = next_responder as *mut NSResponder;
         if next_responder.is_null() {
             None
         }
         else {
-            let share_id = ShareId::from_retained_ptr(next_responder);
-            Some(WeakId::new(&share_id))
+            Some(ShareId::from_ptr(next_responder))
         }
     }
 
-    unsafe fn set_next_responder(&self, next_responder: Option<WeakId<NSResponder>>) {
-        let next_responder = next_responder.and_then(|weak| weak.load());
+    unsafe fn set_next_responder(&self, next_responder: Option<ShareId<NSResponder>>) {
         let next_responder_ptr: *const NSResponder = match next_responder {
             Some(next_responder) => &*next_responder,
             None => ptr::null()
@@ -225,11 +223,11 @@ impl<T> IsNSResponder for T
 
 
 
-    unsafe fn next_responder(&self) -> Option<WeakId<NSResponder>> {
+    unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>> {
         self.super_ns_responder_ref().next_responder()
     }
 
-    unsafe fn set_next_responder(&self, next_responder: Option<WeakId<NSResponder>>) {
+    unsafe fn set_next_responder(&self, next_responder: Option<ShareId<NSResponder>>) {
         self.super_ns_responder_ref().set_next_responder(next_responder);
     }
 
