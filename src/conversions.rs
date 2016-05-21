@@ -1,7 +1,9 @@
+use std::ptr;
+use std::mem;
 use std::os::raw::{c_void, c_char};
 use std::ffi::CStr;
 use objc::runtime as rt;
-use {AnyObject, Id, Object};
+use {AnyObject, ShareId, Object};
 
 pub unsafe fn objc_to_rust<T, U>(x: T) -> U
     where T: ObjCInto<U>
@@ -45,6 +47,27 @@ impl<T> ObjCInto<T> for T {
     unsafe fn objc_into(self) -> T { self }
 }
 
+impl<T> ObjCInto<ShareId<T>> for *mut AnyObject
+    where T: FromAnyObject
+{
+    unsafe fn objc_into(self) -> ShareId<T> {
+        T::from_any(self)
+    }
+}
+
+impl<T> ObjCInto<Option<ShareId<T>>> for *mut AnyObject
+    where T: FromAnyObject
+{
+    unsafe fn objc_into(self) -> Option<ShareId<T>> {
+        if self.is_null() {
+            None
+        }
+        else {
+            Some(T::from_any(self))
+        }
+    }
+}
+
 impl<'a> ObjCInto<String> for &'a AnyObject {
     unsafe fn objc_into(self) -> String {
         let c_str: *const c_void = msg_send![self, UTF8String];
@@ -73,6 +96,72 @@ pub trait IntoObjC<Out> {
 
 impl<T> IntoObjC<T> for T {
     fn into_objc(self) -> T { self }
+}
+
+impl<'a, T> IntoObjC<*mut AnyObject> for &'a T
+    where T: AsAnyObject
+{
+    fn into_objc(self) -> *mut AnyObject {
+        self.any_ref() as *const _ as *mut _
+    }
+}
+
+impl<'a, T> IntoObjC<*mut AnyObject> for Option<&'a T>
+    where T: AsAnyObject
+{
+    fn into_objc(self) -> *mut AnyObject {
+        match self {
+            Some(x) => x.any_ref() as *const _ as *mut _,
+            None => ptr::null_mut()
+        }
+    }
+}
+
+impl<'a, T> IntoObjC<*mut AnyObject> for &'a mut T
+    where T: AsAnyObject
+{
+    fn into_objc(self) -> *mut AnyObject {
+        self.any_mut()
+    }
+}
+
+impl<'a, T> IntoObjC<*mut AnyObject> for Option<&'a mut T>
+    where T: AsAnyObject
+{
+    fn into_objc(self) -> *mut AnyObject {
+        match self {
+            Some(x) => x.any_mut(),
+            None => ptr::null_mut()
+        }
+    }
+}
+
+impl<T> IntoObjC<*mut AnyObject> for ShareId<T>
+    where T: AsAnyObject
+{
+    fn into_objc(self) -> *mut AnyObject {
+        // TODO: Do this cleanly
+        let ptr = self.any_ref() as *const _ as *mut _;
+        mem::forget(self);
+        ptr
+    }
+}
+
+impl<T> IntoObjC<*mut AnyObject> for Option<ShareId<T>>
+    where T: AsAnyObject
+{
+    fn into_objc(self) -> *mut AnyObject {
+        match self {
+            Some(x) => {
+                let ptr = x.any_ref() as *const _ as *mut _;
+                mem::forget(x);
+                ptr
+            },
+            None => {
+                ptr::null_mut()
+            }
+        }
+    }
 }
 
 impl IntoObjC<rt::BOOL> for bool {
@@ -123,7 +212,7 @@ impl<T> AsAnyObject for T
     }
 }
 
-pub trait SubAnyObject: Object {
+pub trait SubAnyObject {
     type AnySuper: AsAnyObject;
 
     fn any_super_ref(&self) -> &Self::AnySuper;
@@ -157,5 +246,5 @@ impl<T> AsAnyObject for T
 }
 
 pub trait FromAnyObject: Sized {
-    unsafe fn from_any(any: *mut AnyObject) -> Id<Self>;
+    unsafe fn from_any(any: *mut AnyObject) -> ShareId<Self>;
 }
