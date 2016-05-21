@@ -1,7 +1,6 @@
-use std::ptr;
 use objc;
 use objc::runtime as rt;
-use {objc_id_to_rust, rust_to_objc_id, Id, ShareId, Object, AnyObject,
+use {Id, ShareId, Object, AnyObject,
      RawObjCObject, NSObject, NSResponder, IsNSResponder};
 
 // NOTE: CGFloat can either be an f32 or an f64
@@ -110,73 +109,18 @@ pub trait IsNSWindow: IsNSResponder {
     fn set_title(&self, title: &str);
 }
 
-impl IsNSWindow for NSWindow {
-    unsafe fn delegate(&self) -> Option<ShareId<NSObject>> {
-        let delegate: *mut AnyObject = msg_send![self, delegate];
-        let delegate = delegate as *mut NSObject;
-        if delegate.is_null() {
-            None
-        }
-        else {
-            Some(ShareId::from_retained_ptr(delegate))
-        }
-    }
+objc! {
+    pub unsafe class trait IsNSWindow: IsNSResponder {
+        type Base = NSWindow;
+        trait Sub = SubNSWindow;
 
-    unsafe fn set_delegate(&self, delegate: Option<ShareId<NSObject>>) {
-        let delegate_ptr: *const NSObject = match delegate {
-            Some(delegate) => &*delegate,
-            None => ptr::null()
-        };
-        let delegate_ptr = delegate_ptr as *mut AnyObject;
-        msg_send![self, setDelegate:delegate_ptr];
-    }
-
-    fn title(&self) -> String {
-        unsafe { objc_id_to_rust(msg_send![self, title]) }
-    }
-
-    fn set_title(&self, title: &str) {
-        unsafe { msg_send![self, setTitle:rust_to_objc_id(title)]; }
-    }
-}
-
-impl<T> IsNSWindow for T
-    where T: SubNSWindow + IsNSResponder
-{
-    unsafe fn delegate(&self) -> Option<ShareId<NSObject>> {
-        self.super_ns_window_ref().delegate()
-    }
-
-    unsafe fn set_delegate(&self, delegate: Option<ShareId<NSObject>>) {
-        self.super_ns_window_ref().set_delegate(delegate);
-    }
-
-    fn title(&self) -> String {
-        self.super_ns_window_ref().title()
-    }
-
-    fn set_title(&self, title: &str) {
-        self.super_ns_window_ref().set_title(title);
-    }
-}
-
-pub trait SubNSWindow {
-    type SuperNSWindow: IsNSWindow;
-
-    fn super_ns_window_ref(&self) -> &Self::SuperNSWindow;
-    fn super_ns_window_mut(&mut self) -> &mut Self::SuperNSWindow;
-}
-
-impl<T> SubNSWindow for T
-    where T: Object, T::Super: IsNSWindow
-{
-    type SuperNSWindow = T::Super;
-
-    fn super_ns_window_ref(&self) -> &Self::SuperNSWindow {
-        self.super_ref()
-    }
-
-    fn super_ns_window_mut(&mut self) -> &mut Self::SuperNSWindow {
-        self.super_mut()
+        unsafe fn delegate(&self) -> Option<ShareId<NSObject>>
+            => [self, delegate] -> *mut AnyObject;
+        unsafe fn set_delegate(&self, delegate: Option<ShareId<NSObject>>)
+            => [self, setDelegate:(delegate: *mut AnyObject)];
+        fn title(&self) -> String
+            => [self, title] -> *mut AnyObject;
+        fn set_title(&self, title: &str)
+            => [self, setTitle:(title: *mut AnyObject)];
     }
 }

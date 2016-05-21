@@ -98,108 +98,21 @@ pub trait IsNSWindowController: IsNSResponder {
     // fn dismiss_controller(sender: Option<ShareId<NSObject>>);
 }
 
-impl IsNSWindowController for NSWindowController {
-    fn load_window(&self) {
-        unsafe {
-            msg_send![self, loadWindow];
-        }
-    }
+objc! {
+    pub unsafe class trait IsNSWindowController: IsNSResponder {
+        type Base = NSWindowController;
+        trait Sub = SubNSWindowController;
 
-    fn show_window(&self, sender: Option<ShareId<NSObject>>) {
-        let sender_ptr: *const NSObject = match sender {
-            Some(sender) => &*sender,
-            None => ptr::null()
-        };
-        let sender_ptr = sender_ptr as *const AnyObject;
-        unsafe {
-            msg_send![self, showWindow:sender_ptr];
-        }
-    }
-
-    fn is_window_loaded(&self) -> bool {
-        unimplemented!();
-    }
-
-    fn window(&self) -> Option<ShareId<NSWindow>> {
-        unsafe {
-            let window_ptr: *mut AnyObject = msg_send![self, window];
-            let window_ptr = window_ptr as *mut NSWindow;
-            if window_ptr.is_null() {
-                None
-            }
-            else {
-                Some(ShareId::from_retained_ptr(window_ptr))
-            }
-        }
-    }
-
-    fn set_window(&self, window: Option<ShareId<NSWindow>>) {
-        let window_ptr = match window {
-            Some(window) => &*window,
-            None => ptr::null()
-        };
-        let window_ptr = window_ptr as *const NSObject;
-        unsafe { msg_send![self, setWindow:window_ptr]; }
-    }
-
-    fn window_did_load(&self) {
-        unsafe { msg_send![self, windowDidLoad]; }
-    }
-
-    fn window_will_load(&self) {
-        unsafe { msg_send![self, windowWillLoad]; }
-    }
-}
-
-impl<T> IsNSWindowController for T
-    where T: SubNSWindowController + IsNSResponder
-{
-    default fn load_window(&self) {
-        self.super_ns_window_controller_ref().load_window()
-    }
-
-    default fn show_window(&self, sender: Option<ShareId<NSObject>>) {
-        self.super_ns_window_controller_ref().show_window(sender);
-    }
-
-    default fn is_window_loaded(&self) -> bool {
-        self.super_ns_window_controller_ref().is_window_loaded()
-    }
-
-    default fn window(&self) -> Option<ShareId<NSWindow>> {
-        self.super_ns_window_controller_ref().window()
-    }
-
-    default fn set_window(&self, window: Option<ShareId<NSWindow>>) {
-        self.super_ns_window_controller_ref().set_window(window);
-    }
-
-    default fn window_did_load(&self) {
-        self.super_ns_window_controller_ref().window_did_load();
-    }
-
-    default fn window_will_load(&self) {
-        self.super_ns_window_controller_ref().window_will_load();
-    }
-}
-
-pub trait SubNSWindowController {
-    type SuperNSWindowController: IsNSWindowController;
-
-    fn super_ns_window_controller_ref(&self) -> &Self::SuperNSWindowController;
-    fn super_ns_window_controller_mut(&mut self) -> &mut Self::SuperNSWindowController;
-}
-
-impl<T> SubNSWindowController for T
-    where T: Object, T::Super: IsNSWindowController
-{
-    type SuperNSWindowController = T::Super;
-
-    fn super_ns_window_controller_ref(&self) -> &Self::SuperNSWindowController {
-        self.super_ref()
-    }
-
-    fn super_ns_window_controller_mut(&mut self) -> &mut Self::SuperNSWindowController {
-        self.super_mut()
+        fn load_window(&self) => [self, loadWindow];
+        fn show_window(&self, sender: Option<ShareId<NSObject>>)
+            => [self, showWindow:(sender: *mut AnyObject)];
+        fn is_window_loaded(&self) -> bool
+            => [self, isWindowLoaded] -> rt::BOOL;
+        fn window(&self) -> Option<ShareId<NSWindow>>
+            => [self, window] -> *mut AnyObject;
+        fn set_window(&self, window: Option<ShareId<NSWindow>>)
+            => [self, setWindow:(window: *mut AnyObject)];
+        fn window_did_load(&self) => [self, windowDidLoad];
+        fn window_will_load(&self) => [self, windowWillLoad];
     }
 }

@@ -1,7 +1,6 @@
-use std::ptr;
 use objc;
-use {objc_bool_to_rust, ShareId, Object, AnyObject,
-     RawObjCObject, NSObject, IsNSObject, NSEvent};
+use objc::runtime as rt;
+use {ShareId, Object, AnyObject, RawObjCObject, NSObject, IsNSObject, NSEvent};
 
 #[repr(C)]
 pub struct NSResponder {
@@ -78,206 +77,58 @@ pub trait IsNSResponder: IsNSObject {
     // fn delete_word_forward(&self, sender: Option<ShareId<NSObject>>);
 }
 
-pub trait SubNSResponder {
-    type SuperNSResponder: IsNSResponder;
+objc! {
+    pub unsafe class trait IsNSResponder: IsNSObject {
+        type Base = NSResponder;
+        trait Sub = SubNSResponder;
 
-    fn super_ns_responder_ref(&self) -> &Self::SuperNSResponder;
-    fn super_ns_responder_mut(&mut self) -> &mut Self::SuperNSResponder;
-}
+        fn accepts_first_responder(&self) -> bool
+            => [self, acceptsFirstResponder] -> rt::BOOL;
+        fn become_first_responder(&self) -> bool
+            => [self, becomeFirstResponder] -> rt::BOOL;
+        fn resign_first_responder(&self) -> bool
+            => [self, resignFirstResponder] -> rt::BOOL;
+        fn validate_proposed_first_responder_for_event(
+            &self,
+            responder: ShareId<NSResponder>,
+            event: Option<ShareId<NSEvent>>
+        )
+            -> bool
+            => [self, validateProposedFirstResponder:(responder: *mut AnyObject)
+                                            forEvent:(event: *mut AnyObject)]
+                -> rt::BOOL;
 
-impl<T> SubNSResponder for T
-    where T: Object, T::Super: IsNSResponder
-{
-    type SuperNSResponder = T::Super;
+        unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>>
+            => [self, nextResponder] -> *mut AnyObject;
+        unsafe fn set_next_responder(
+            &self,
+            next_responder: Option<ShareId<NSResponder>>
+        )
+            => [self, setNextResponder:(responder:*mut AnyObject)];
 
-    fn super_ns_responder_ref(&self) -> &Self::SuperNSResponder {
-        self.super_ref()
-    }
-
-    fn super_ns_responder_mut(&mut self) -> &mut Self::SuperNSResponder {
-        self.super_mut()
-    }
-}
-
-impl IsNSResponder for NSResponder {
-    fn accepts_first_responder(&self) -> bool {
-        unsafe {
-            objc_bool_to_rust(msg_send![self, acceptsFirstResponder])
-        }
-    }
-
-    fn become_first_responder(&self) -> bool {
-        unsafe {
-            objc_bool_to_rust(msg_send![self, becomeFirstResponder])
-        }
-    }
-
-    fn resign_first_responder(&self) -> bool {
-        unsafe {
-            objc_bool_to_rust(msg_send![self, resignFirstResponder])
-        }
-    }
-
-    fn validate_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool
-    {
-        let event_ptr: *const NSEvent = match event {
-            Some(event) => &*event,
-            None => ptr::null()
-        };
-        unsafe {
-            objc_bool_to_rust(msg_send![self, validateProposedResponder:responder forEvent:event_ptr])
-        }
-    }
-
-
-
-    unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>> {
-        let next_responder: *mut AnyObject = msg_send![self, nextResponder];
-        let next_responder = next_responder as *mut NSResponder;
-        if next_responder.is_null() {
-            None
-        }
-        else {
-            Some(ShareId::from_ptr(next_responder))
-        }
-    }
-
-    unsafe fn set_next_responder(&self, next_responder: Option<ShareId<NSResponder>>) {
-        let next_responder_ptr: *const NSResponder = match next_responder {
-            Some(next_responder) => &*next_responder,
-            None => ptr::null()
-        };
-        let next_responder_ptr = next_responder_ptr as *const AnyObject;
-        msg_send![self, setNextResponder:next_responder_ptr];
-    }
-
-
-
-    fn mouse_down(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, mouseDown:&*event]; }
-    }
-
-    fn mouse_dragged(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, mouseDragged:&*event]; }
-    }
-
-    fn mouse_up(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, mouseUp:&*event]; }
-    }
-
-    fn mouse_moved(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, mouseMoved:&*event]; }
-    }
-
-    fn mouse_entered(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, mouseEntered:&*event]; }
-    }
-
-    fn mouse_exited(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, mouseExited:&*event]; }
-    }
-
-    fn right_mouse_down(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, rightMouseDown:&*event]; }
-    }
-
-    fn right_mouse_dragged(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, rightMouseDragged:&*event]; }
-    }
-
-    fn right_mouse_up(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, rightMouseUp:&*event]; }
-    }
-
-    fn other_mouse_down(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, otherMouseUp:&*event]; }
-    }
-
-    fn other_mouse_dragged(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, otherMouseDragged:&*event]; }
-    }
-
-    fn other_mouse_up(&self, event: ShareId<NSEvent>) {
-        unsafe { msg_send![self, otherMouseUp:&*event]; }
-    }
-}
-
-impl<T> IsNSResponder for T
-    where T: SubNSResponder + IsNSObject
-{
-    fn accepts_first_responder(&self) -> bool {
-        self.super_ns_responder_ref().accepts_first_responder()
-    }
-
-    fn become_first_responder(&self) -> bool {
-        self.super_ns_responder_ref().become_first_responder()
-    }
-
-    fn resign_first_responder(&self) -> bool {
-        self.super_ns_responder_ref().resign_first_responder()
-    }
-
-    fn validate_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool {
-        self.super_ns_responder_ref().validate_proposed_first_responder_for_event(responder, event)
-    }
-
-
-
-    unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>> {
-        self.super_ns_responder_ref().next_responder()
-    }
-
-    unsafe fn set_next_responder(&self, next_responder: Option<ShareId<NSResponder>>) {
-        self.super_ns_responder_ref().set_next_responder(next_responder);
-    }
-
-
-
-    fn mouse_down(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().mouse_down(event);
-    }
-
-    fn mouse_dragged(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().mouse_dragged(event);
-    }
-
-    fn mouse_up(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().mouse_up(event);
-    }
-
-    fn mouse_moved(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().mouse_moved(event)
-    }
-
-    fn mouse_entered(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().mouse_entered(event);
-    }
-
-    fn mouse_exited(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().mouse_exited(event);
-    }
-
-    fn right_mouse_down(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().right_mouse_down(event);
-    }
-
-    fn right_mouse_dragged(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().right_mouse_dragged(event);
-    }
-
-    fn right_mouse_up(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().right_mouse_up(event);
-    }
-
-    fn other_mouse_down(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().other_mouse_down(event);
-    }
-
-    fn other_mouse_dragged(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().other_mouse_dragged(event);
-    }
-
-    fn other_mouse_up(&self, event: ShareId<NSEvent>) {
-        self.super_ns_responder_ref().other_mouse_up(event);
+        fn mouse_down(&self, event: ShareId<NSEvent>)
+            => [self, mouseDown:(event: *mut AnyObject)];
+        fn mouse_dragged(&self, event: ShareId<NSEvent>)
+            => [self, mouseDragged:(event: *mut AnyObject)];
+        fn mouse_up(&self, event: ShareId<NSEvent>)
+            => [self, mouseUp:(event: *mut AnyObject)];
+        fn mouse_moved(&self, event: ShareId<NSEvent>)
+            => [self, mouseMoved:(event: *mut AnyObject)];
+        fn mouse_entered(&self, event: ShareId<NSEvent>)
+            => [self, mouseEntered:(event: *mut AnyObject)];
+        fn mouse_exited(&self, event: ShareId<NSEvent>)
+            => [self, mouseExited:(event: *mut AnyObject)];
+        fn right_mouse_down(&self, event: ShareId<NSEvent>)
+            => [self, rightMouseDown:(event: *mut AnyObject)];
+        fn right_mouse_dragged(&self, event: ShareId<NSEvent>)
+            => [self, rightMouseDragged:(event: *mut AnyObject)];
+        fn right_mouse_up(&self, event: ShareId<NSEvent>)
+            => [self, rightMouseUp:(event: *mut AnyObject)];
+        fn other_mouse_down(&self, event: ShareId<NSEvent>)
+            => [self, otherMouseDown:(event: *mut AnyObject)];
+        fn other_mouse_dragged(&self, event: ShareId<NSEvent>)
+            => [self, otherMouseDragged:(event: *mut AnyObject)];
+        fn other_mouse_up(&self, event: ShareId<NSEvent>)
+            => [self, otherMouseUp:(event: *mut AnyObject)];
     }
 }

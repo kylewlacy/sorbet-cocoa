@@ -1,7 +1,7 @@
 use objc;
 use objc::runtime as rt;
-use {Object, ShareId, RawObjCObject, NSResponder, IsNSResponder,
-     NSApplicationDelegate, NSApplicationActivationPolicy, objc_bool_to_rust};
+use {AnyObject, Object, ShareId, RawObjCObject, NSResponder, IsNSResponder,
+     NSApplicationDelegate, NSApplicationActivationPolicy};
 
 #[repr(C)]
 pub struct NSApplication {
@@ -40,68 +40,18 @@ impl NSApplication {
     }
 }
 
-impl IsNSApplication for NSApplication {
-    fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>) {
-        unsafe { msg_send![self, setDelegate:delegate]; }
-    }
+objc! {
+    pub unsafe class trait IsNSApplication: IsNSResponder {
+        type Base = NSApplication;
+        trait Sub = SubNSApplication;
 
-    fn activate_ignoring_other_apps(&self, flag: bool) {
-        let flag = match flag {
-            true => rt::YES,
-            false => rt::NO
-        };
-        unsafe { msg_send![self, activateIgnoringOtherApps:flag]; }
-    }
-
-    fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool {
-        let activation_policy = activation_policy as usize;
-        unsafe {
-            objc_bool_to_rust(msg_send![self, setActivationPolicy:activation_policy])
-        }
-    }
-
-    fn run(&self) {
-        unsafe { msg_send![self, run]; }
-    }
-}
-
-impl<T> IsNSApplication for T
-    where T: SubNSApplication + IsNSResponder
-{
-    default fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>) {
-        self.super_ns_application_ref().set_delegate(delegate);
-    }
-
-    default fn activate_ignoring_other_apps(&self, flag: bool) {
-        self.super_ns_application_ref().activate_ignoring_other_apps(flag);
-    }
-
-    default fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool {
-        self.super_ns_application_ref().set_activation_policy(activation_policy)
-    }
-
-    default fn run(&self) {
-        self.super_ns_application_ref().run();
-    }
-}
-
-pub trait SubNSApplication {
-    type SuperNSApplication: IsNSApplication;
-
-    fn super_ns_application_ref(&self) -> &Self::SuperNSApplication;
-    fn super_ns_application_mut(&mut self) -> &mut Self::SuperNSApplication;
-}
-
-impl<T> SubNSApplication for T
-    where T: Object, T::Super: IsNSApplication
-{
-    type SuperNSApplication = T::Super;
-
-    fn super_ns_application_ref(&self) -> &Self::SuperNSApplication {
-        self.super_ref()
-    }
-
-    fn super_ns_application_mut(&mut self) -> &mut Self::SuperNSApplication {
-        self.super_mut()
+        fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>)
+            => [self, setDelegate:(delegate: *mut AnyObject)];
+        fn activate_ignoring_other_apps(&self, flag: bool)
+            => [self, activateIgnoringOtherApps:(flag: rt::BOOL)];
+        fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool
+            => [self, setActivationPolicy:(policy: usize)] -> rt::BOOL;
+        fn run(&self)
+            => [self, run];
     }
 }

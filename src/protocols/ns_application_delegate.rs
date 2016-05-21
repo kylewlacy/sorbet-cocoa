@@ -75,13 +75,13 @@ impl SubAnyObject for NSApplicationDelegate {
 }
 
 impl SubNSObject for NSApplicationDelegate {
-    type SuperNSObject = NSObject;
+    type ClassSuper = NSObject;
 
-    fn super_ns_object_ref(&self) -> &Self::SuperNSObject {
+    fn class_super_ref(&self) -> &Self::ClassSuper {
         &self.super_
     }
 
-    fn super_ns_object_mut(&mut self) -> &mut Self::SuperNSObject {
+    fn class_super_mut(&mut self) -> &mut Self::ClassSuper {
         &mut self.super_
     }
 }
