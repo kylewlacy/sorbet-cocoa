@@ -2,7 +2,7 @@ use std::mem;
 use objc;
 use {objc_bool_to_rust, objc_to_rust, Object, AnyObject, Id, ShareId,
      IsNSObject, NSObject, SubNSObject, NSApplication, NSNotification,
-     IntoObjC, ObjCInto};
+     IntoObjC, ObjCInto, SubAnyObject};
 
 #[repr(usize)]
 pub enum NSApplicationActivationPolicy {
@@ -57,6 +57,18 @@ impl NSApplicationDelegate {
         let self_: *mut NSObject = &mut *self_;
         let self_ = self_ as *mut NSApplicationDelegate;
         Id::from_retained_ptr(self_)
+    }
+}
+
+impl SubAnyObject for NSApplicationDelegate {
+    type AnySuper = NSObject;
+
+    fn any_super_ref(&self) -> &Self::AnySuper {
+        &self.super_
+    }
+
+    fn any_super_mut(&mut self) -> &mut Self::AnySuper {
+        &mut self.super_
     }
 }
 
