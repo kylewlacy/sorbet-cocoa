@@ -28,7 +28,7 @@ pub trait IsNSResponder: IsNSObject {
     fn accepts_first_responder(&self) -> bool;
     fn become_first_responder(&self) -> bool;
     fn resign_first_responder(&self) -> bool;
-    fn validates_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool;
+    fn validate_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool;
 
     unsafe fn next_responder(&self) -> Option<ShareId<NSResponder>>;
     unsafe fn set_next_responder(&self, next_responder: Option<ShareId<NSResponder>>);
@@ -118,14 +118,14 @@ impl IsNSResponder for NSResponder {
         }
     }
 
-    fn validates_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool
+    fn validate_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool
     {
         let event_ptr: *const NSEvent = match event {
             Some(event) => &*event,
             None => ptr::null()
         };
         unsafe {
-            objc_bool_to_rust(msg_send![self, validatesProposedResponder:responder forEvent:event_ptr])
+            objc_bool_to_rust(msg_send![self, validateProposedResponder:responder forEvent:event_ptr])
         }
     }
 
@@ -217,8 +217,8 @@ impl<T> IsNSResponder for T
         self.super_ns_responder_ref().resign_first_responder()
     }
 
-    fn validates_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool {
-        self.super_ns_responder_ref().validates_proposed_first_responder_for_event(responder, event)
+    fn validate_proposed_first_responder_for_event(&self, responder: ShareId<NSResponder>, event: Option<ShareId<NSEvent>>) -> bool {
+        self.super_ns_responder_ref().validate_proposed_first_responder_for_event(responder, event)
     }
 
 
