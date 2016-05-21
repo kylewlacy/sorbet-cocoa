@@ -1,4 +1,4 @@
-#![feature(specialization)]
+#![feature(specialization, type_macros)]
 
 #[macro_use] extern crate objc;
 extern crate objc_id;
@@ -8,6 +8,7 @@ use objc::runtime as rt;
 
 pub use objc_id::{Id, WeakId, ShareId, Ownership, Owned, Shared};
 
+#[macro_use] mod macros;
 mod conversions;
 mod classes;
 mod protocols;
