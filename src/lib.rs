@@ -39,3 +39,12 @@ pub trait Object {
 }
 
 pub unsafe trait RawObjCObject: objc::Message { }
+
+impl<T> FromAnyObject for T
+    where T: RawObjCObject + Sized
+{
+    unsafe fn from_any(any: *mut AnyObject) -> ShareId<Self> {
+        let self_ = any as *mut Self;
+        ShareId::from_ptr(self_)
+    }
+}
