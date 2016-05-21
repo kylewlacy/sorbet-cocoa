@@ -47,6 +47,42 @@ impl<T> ObjCInto<T> for T {
     unsafe fn objc_into(self) -> T { self }
 }
 
+impl<'a, T> ObjCInto<&'a T> for *const T {
+    unsafe fn objc_into(self) -> &'a T {
+        &*self
+    }
+}
+
+impl<'a, T> ObjCInto<Option<&'a T>> for *const T {
+    unsafe fn objc_into(self) -> Option<&'a T> {
+        self.as_ref()
+    }
+}
+
+impl<'a, T> ObjCInto<&'a T> for *mut T {
+    unsafe fn objc_into(self) -> &'a T {
+        &*self
+    }
+}
+
+impl<'a, T> ObjCInto<Option<&'a T>> for *mut T {
+    unsafe fn objc_into(self) -> Option<&'a T> {
+        self.as_ref()
+    }
+}
+
+impl<'a, T> ObjCInto<&'a mut T> for *mut T {
+    unsafe fn objc_into(self) -> &'a mut T {
+        &mut *self
+    }
+}
+
+impl<'a, T> ObjCInto<Option<&'a mut T>> for *mut T {
+    unsafe fn objc_into(self) -> Option<&'a mut T> {
+        self.as_mut()
+    }
+}
+
 impl<T> ObjCInto<ShareId<T>> for *mut AnyObject
     where T: FromAnyObject
 {
@@ -96,6 +132,33 @@ pub trait IntoObjC<Out> {
 
 impl<T> IntoObjC<T> for T {
     fn into_objc(self) -> T { self }
+}
+
+impl<'a, T> IntoObjC<*const T> for Option<&'a T> {
+    fn into_objc(self) -> *const T {
+        match self {
+            Some(x) => x,
+            None => ptr::null()
+        }
+    }
+}
+
+impl<'a, T> IntoObjC<*const T> for Option<&'a mut T> {
+    fn into_objc(self) -> *const T {
+        match self {
+            Some(x) => x,
+            None => ptr::null()
+        }
+    }
+}
+
+impl<'a, T> IntoObjC<*mut T> for Option<&'a mut T> {
+    fn into_objc(self) -> *mut T {
+        match self {
+            Some(x) => x,
+            None => ptr::null_mut()
+        }
+    }
 }
 
 impl<'a, T> IntoObjC<*mut AnyObject> for &'a T
