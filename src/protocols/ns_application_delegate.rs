@@ -1,6 +1,6 @@
 use std::mem;
 use objc;
-use {objc_bool_to_rust, objc_to_rust, Object, AnyObject, Id, ShareId,
+use {objc_bool_to_rust, objc_to_rust, Object, AnyObject, ShareId,
      IsNSObject, NSObject, NSApplication, NSNotification,
      IntoObjC, ObjCInto, RawObjCObject};
 
@@ -64,14 +64,6 @@ impl Object for NSApplicationDelegate {
 
     fn super_mut(&mut self) -> &mut Self::Super {
         &mut self.super_
-    }
-}
-
-impl NSApplicationDelegate {
-    pub unsafe fn from_object_unchecked(mut self_: Id<NSObject>) -> Id<Self> {
-        let self_: *mut NSObject = &mut *self_;
-        let self_ = self_ as *mut NSApplicationDelegate;
-        Id::from_retained_ptr(self_)
     }
 }
 
