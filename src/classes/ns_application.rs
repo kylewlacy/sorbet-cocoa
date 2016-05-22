@@ -25,7 +25,7 @@ impl Object for NSApplication {
 }
 
 pub trait IsNSApplication: IsNSResponder {
-    fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>);
+    unsafe fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>);
     fn main_menu(&self) -> Option<ShareId<NSMenu>>;
     fn set_main_menu(&self, main_menu: Option<ShareId<NSMenu>>);
     fn activate_ignoring_other_apps(&self, flag: bool);
@@ -47,7 +47,7 @@ objc! {
         type Base = NSApplication;
         trait Sub = SubNSApplication;
 
-        fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>)
+        unsafe fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>)
             => [self, setDelegate:(delegate: *mut AnyObject)];
         fn main_menu(&self) -> Option<ShareId<NSMenu>>
             => [self, mainMenu] -> *mut AnyObject;
