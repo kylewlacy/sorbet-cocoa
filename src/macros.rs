@@ -1,20 +1,20 @@
 #[macro_export]
 macro_rules! objc {
     (
-        pub unsafe class trait $class:ident $(: $parent:ident),* { $($body:tt)+ }
+        pub unsafe objc trait $name:ident $(: $parent:ident),* { $($body:tt)+ }
     ) => {
-        __objc_class_trait! {
-            @class: $class;
+        __objc_trait! {
+            @name: $name;
             @parent: [$($parent),*];
             @vis: [pub];
             body: { $($body)* };
         }
     };
     (
-        unsafe class trait $class:ident $(: $parent:ident),* { $($body:tt)+ }
+        unsafe objc trait $name:ident $(: $parent:ident),* { $($body:tt)+ }
     ) => {
-        __objc_class_trait! {
-            @class: $class;
+        __objc_trait! {
+            @name: $name;
             @parent: [$($parent),*];
             @vis: [];
             body: { $($body)* };
@@ -129,12 +129,12 @@ macro_rules! __objc_expand_method {
 }
 
 #[macro_export]
-macro_rules! __objc_class_trait_add_fn {
+macro_rules! __objc_trait_add_fn {
     {
         @fn { $($new_fn:tt)* };
-        @class_trait: {
+        @objc_trait: {
             @base: $base:ty;
-            @class: $class:ident;
+            @name: $name:ident;
             @fns: [$($fns:tt)*];
             @parent: [$($parent:ident),*];
             @sub: $sub:ident;
@@ -142,9 +142,9 @@ macro_rules! __objc_class_trait_add_fn {
             body: { $($body:tt)* };
         };
     } => {
-        __objc_class_trait! {
+        __objc_trait! {
             @base: $base;
-            @class: $class;
+            @name: $name;
             @fns: [
                 $($fns)*
                 @fn { $($new_fn)* };
@@ -158,9 +158,9 @@ macro_rules! __objc_class_trait_add_fn {
 }
 
 #[macro_export]
-macro_rules! __objc_class_trait {
+macro_rules! __objc_trait {
     {
-        @class: $class:ident;
+        @name: $name:ident;
         @parent: [$($parent:ident),*];
         @vis: [$($vis:ident),*];
         body: {
@@ -170,9 +170,9 @@ macro_rules! __objc_class_trait {
             $($body_rest:tt)*
         };
     } => {
-        __objc_class_trait! {
+        __objc_trait! {
             @base: $base;
-            @class: $class;
+            @name: $name;
             @fns: [];
             @parent: [$($parent),*];
             @sub: $sub;
@@ -187,7 +187,7 @@ macro_rules! __objc_class_trait {
 
     (
         @base: $base:ty;
-        @class: $class:ident;
+        @name: $name:ident;
         @fns: [$($fns:tt)*];
         @parent: [$($parent:ident),*];
         @sub: $sub:ident;
@@ -199,11 +199,11 @@ macro_rules! __objc_class_trait {
         };
     ) => {
         __objc_expand_method! {
-            @pass: __objc_class_trait_add_fn! {
+            @pass: __objc_trait_add_fn! {
                 @_;
-                @class_trait: {
+                @objc_trait: {
                     @base: $base;
-                    @class: $class;
+                    @name: $name;
                     @fns: [$($fns)*];
                     @parent: [$($parent),*];
                     @sub: $sub;
@@ -220,7 +220,7 @@ macro_rules! __objc_class_trait {
 
     (
         @base: $base:ty;
-        @class: $class:ident;
+        @name: $name:ident;
         @fns: [$($fns:tt)*];
         @parent: [$($parent:ident),*];
         @sub: $sub:ident;
@@ -232,11 +232,11 @@ macro_rules! __objc_class_trait {
         };
     ) => {
         __objc_expand_method! {
-            @pass: __objc_class_trait_add_fn! {
+            @pass: __objc_trait_add_fn! {
                 @_;
-                @class_trait: {
+                @objc_trait: {
                     @base: $base;
-                    @class: $class;
+                    @name: $name;
                     @fns: [$($fns)*];
                     @parent: [$($parent),*];
                     @sub: $sub;
@@ -255,16 +255,16 @@ macro_rules! __objc_class_trait {
 
     (
         @base: $base:ty;
-        @class: $class:ident;
+        @name: $name:ident;
         @fns: [$($fns:tt)*];
         @parent: [$($parent:ident),*];
         @sub: $sub:ident;
         @vis: [$($vis:ident),*];
         body: { };
     ) => {
-        __objc_class_trait! {
+        __objc_trait! {
             @base: $base;
-            @class: $class;
+            @name: $name;
             @fns: [$($fns)*];
             @parent: [$($parent),*];
             @sub: $sub;
@@ -274,7 +274,7 @@ macro_rules! __objc_class_trait {
 
     (
         @base: $base:ty;
-        @class: $class:ident;
+        @name: $name:ident;
         @fns: [
             $(
                 @fn {
@@ -293,7 +293,7 @@ macro_rules! __objc_class_trait {
         @vis: [$($vis:ident),*];
     ) => {
         #[allow(unused_unsafe)]
-        impl $class for $base {
+        impl $name for $base {
             $(
                 $($qualifiers)* fn $fn_name(&self, $($fn_arg: $fn_arg_ty),*) $(-> $fn_ret),* {
                     unsafe {
@@ -305,7 +305,7 @@ macro_rules! __objc_class_trait {
             )*
         }
 
-        impl<T> $class for T
+        impl<T> $name for T
             where T: $sub + $($parent),*
         {
             $(
@@ -316,14 +316,14 @@ macro_rules! __objc_class_trait {
         }
 
         $($vis),* trait $sub {
-            type ClassSuper: $class;
+            type ClassSuper: $name;
 
             fn class_super_ref(&self) -> &Self::ClassSuper;
             fn class_super_mut(&mut self) -> &mut Self::ClassSuper;
         }
 
         impl<T> $sub for T
-            where T: $crate::Object, <T as $crate::Object>::Super: $class
+            where T: $crate::Object, <T as $crate::Object>::Super: $name
         {
             type ClassSuper = <T as $crate::Object>::Super;
 
@@ -371,7 +371,7 @@ mod tests {
     }
 
     objc! {
-        unsafe class trait IsMyObject: IsNSObject {
+        unsafe objc trait IsMyObject: IsNSObject {
             type Base = MyObject;
             trait Sub = SubMyObject;
 

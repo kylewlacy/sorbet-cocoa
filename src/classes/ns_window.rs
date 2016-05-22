@@ -110,7 +110,7 @@ pub trait IsNSWindow: IsNSResponder {
 }
 
 objc! {
-    pub unsafe class trait IsNSWindow: IsNSResponder {
+    pub unsafe objc trait IsNSWindow: IsNSResponder {
         type Base = NSWindow;
         trait Sub = SubNSWindow;
 

@@ -44,7 +44,7 @@ impl NSApplication {
 }
 
 objc! {
-    pub unsafe class trait IsNSApplication: IsNSResponder {
+    pub unsafe objc trait IsNSApplication: IsNSResponder {
         type Base = NSApplication;
         trait Sub = SubNSApplication;
 

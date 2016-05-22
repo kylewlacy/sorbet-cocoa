@@ -53,7 +53,7 @@ pub trait IsNSMenu: IsNSObject {
 }
 
 objc! {
-    pub unsafe class trait IsNSMenu: IsNSObject {
+    pub unsafe objc trait IsNSMenu: IsNSObject {
         type Base = NSMenu;
         trait Sub = SubNSMenu;
 

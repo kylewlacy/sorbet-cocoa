@@ -46,7 +46,7 @@ pub trait IsNSObject {
 }
 
 objc! {
-    pub unsafe class trait IsNSObject {
+    pub unsafe objc trait IsNSObject {
         type Base = NSObject;
         trait Sub = SubNSObject;
 

@@ -99,7 +99,7 @@ pub trait IsNSWindowController: IsNSResponder {
 }
 
 objc! {
-    pub unsafe class trait IsNSWindowController: IsNSResponder {
+    pub unsafe objc trait IsNSWindowController: IsNSResponder {
         type Base = NSWindowController;
         trait Sub = SubNSWindowController;
 

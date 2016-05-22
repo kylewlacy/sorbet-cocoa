@@ -78,7 +78,7 @@ pub trait IsNSResponder: IsNSObject {
 }
 
 objc! {
-    pub unsafe class trait IsNSResponder: IsNSObject {
+    pub unsafe objc trait IsNSResponder: IsNSObject {
         type Base = NSResponder;
         trait Sub = SubNSResponder;
 
