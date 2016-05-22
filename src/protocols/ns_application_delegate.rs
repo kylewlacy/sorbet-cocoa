@@ -1,8 +1,8 @@
 use std::mem;
 use objc;
 use {objc_bool_to_rust, objc_to_rust, Object, AnyObject, Id, ShareId,
-     IsNSObject, NSObject, SubNSObject, NSApplication, NSNotification,
-     IntoObjC, ObjCInto, SubAnyObject, RawObjCObject};
+     IsNSObject, NSObject, NSApplication, NSNotification,
+     IntoObjC, ObjCInto, RawObjCObject};
 
 #[repr(usize)]
 pub enum NSApplicationActivationPolicy {
@@ -46,6 +46,7 @@ impl ObjCInto<NSApplicationTerminateReply> for usize {
 
 
 
+#[repr(C)]
 pub struct NSApplicationDelegate {
     super_: NSObject
 }
@@ -54,35 +55,23 @@ unsafe impl objc::Message for NSApplicationDelegate { }
 
 unsafe impl RawObjCObject for NSApplicationDelegate { }
 
+impl Object for NSApplicationDelegate {
+    type Super = NSObject;
+
+    fn super_ref(&self) -> &Self::Super {
+        &self.super_
+    }
+
+    fn super_mut(&mut self) -> &mut Self::Super {
+        &mut self.super_
+    }
+}
+
 impl NSApplicationDelegate {
     pub unsafe fn from_object_unchecked(mut self_: Id<NSObject>) -> Id<Self> {
         let self_: *mut NSObject = &mut *self_;
         let self_ = self_ as *mut NSApplicationDelegate;
         Id::from_retained_ptr(self_)
-    }
-}
-
-impl SubAnyObject for NSApplicationDelegate {
-    type AnySuper = NSObject;
-
-    fn any_super_ref(&self) -> &Self::AnySuper {
-        &self.super_
-    }
-
-    fn any_super_mut(&mut self) -> &mut Self::AnySuper {
-        &mut self.super_
-    }
-}
-
-impl SubNSObject for NSApplicationDelegate {
-    type ClassSuper = NSObject;
-
-    fn class_super_ref(&self) -> &Self::ClassSuper {
-        &self.super_
-    }
-
-    fn class_super_mut(&mut self) -> &mut Self::ClassSuper {
-        &mut self.super_
     }
 }
 
