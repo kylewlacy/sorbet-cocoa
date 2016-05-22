@@ -1,7 +1,7 @@
 use std::ptr;
 use std::mem;
 use std::os::raw::{c_void, c_char};
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use objc::runtime as rt;
 use {AnyObject, ShareId, Object};
 
@@ -238,11 +238,11 @@ impl IntoObjC<rt::BOOL> for bool {
 
 impl<'a> IntoObjC<*mut AnyObject> for &'a str {
     fn into_objc(self) -> *mut AnyObject {
-        let c_str = self.as_ptr();
-        let c_str = c_str as *const c_void;
+        let c_string = CString::new(self).unwrap();
+        let c_string = c_string.as_ptr();
 
         let ns_string = rt::Class::get("NSString").unwrap();
-        unsafe { msg_send![ns_string, stringWithUTF8String:c_str] }
+        unsafe { msg_send![ns_string, stringWithUTF8String:c_string] }
     }
 }
 
