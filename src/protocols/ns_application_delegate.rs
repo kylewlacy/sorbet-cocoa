@@ -46,6 +46,35 @@ impl ObjCInto<NSApplicationTerminateReply> for usize {
 
 
 
+#[derive(Default)]
+struct NSApplicationDelegateDefaultImpl;
+
+impl NSApplicationDelegateDefaultImpl {
+    fn application_will_finish_launching(&self, _notification: ShareId<NSNotification>) {
+
+    }
+
+    fn application_did_finish_launching(&self, _notification: ShareId<NSNotification>) {
+
+    }
+
+    fn application_should_terminate(&self, _sender: ShareId<NSApplication>)
+        -> NSApplicationTerminateReply
+    {
+        NSApplicationTerminateReply::TerminateNow
+    }
+
+    fn application_should_terminate_after_last_window_closed(&self, _sender: ShareId<NSApplication>)
+        -> bool
+    {
+        false
+    }
+
+    fn application_will_terminate(&self, _notification: ShareId<NSNotification>) {
+
+    }
+}
+
 #[repr(C)]
 pub struct NSApplicationDelegate {
     super_: NSObject
@@ -68,29 +97,28 @@ impl Object for NSApplicationDelegate {
 }
 
 pub trait IsNSApplicationDelegate {
-    fn application_will_finish_launching(&self, _notification: ShareId<NSNotification>)
-    {
-
+    fn application_will_finish_launching(&self, notification: ShareId<NSNotification>) {
+        NSApplicationDelegateDefaultImpl.application_will_finish_launching(notification)
     }
 
-    fn application_did_finish_launching(&self, _notification: ShareId<NSNotification>) {
-
+    fn application_did_finish_launching(&self, notification: ShareId<NSNotification>) {
+        NSApplicationDelegateDefaultImpl.application_did_finish_launching(notification)
     }
 
-    fn application_should_terminate(&self, _sender: ShareId<NSApplication>)
+    fn application_should_terminate(&self, sender: ShareId<NSApplication>)
         -> NSApplicationTerminateReply
     {
-        NSApplicationTerminateReply::TerminateNow
+        NSApplicationDelegateDefaultImpl.application_should_terminate(sender)
     }
 
-    fn application_should_terminate_after_last_window_closed(&self, _sender: ShareId<NSApplication>)
+    fn application_should_terminate_after_last_window_closed(&self, sender: ShareId<NSApplication>)
         -> bool
     {
-        false
+        NSApplicationDelegateDefaultImpl.application_should_terminate_after_last_window_closed(sender)
     }
 
-    fn application_will_terminate(&self, _notification: ShareId<NSNotification>) {
-
+    fn application_will_terminate(&self, notification: ShareId<NSNotification>) {
+        NSApplicationDelegateDefaultImpl.application_will_terminate(notification)
     }
 }
 
@@ -126,8 +154,7 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
                 objc_to_rust(application_should_terminate)
             }
             else {
-                // TODO: DRY default impl for optional methods
-                NSApplicationTerminateReply::TerminateNow
+                NSApplicationDelegateDefaultImpl.application_should_terminate(sender)
             }
         }
     }
@@ -142,8 +169,7 @@ impl IsNSApplicationDelegate for NSApplicationDelegate {
                 objc_bool_to_rust(msg_send![self, applicationShouldTerminate:sender_ptr])
             }
             else {
-                // TODO: DRY default impl for optional methods
-                false
+                NSApplicationDelegateDefaultImpl.application_should_terminate_after_last_window_closed(sender)
             }
         }
     }
