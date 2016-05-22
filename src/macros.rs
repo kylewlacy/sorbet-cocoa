@@ -11,7 +11,7 @@ macro_rules! objc {
         }
     };
     (
-        unsafe class trait $class:ident $(: $parent:ident),* { $($body:tt)* }
+        unsafe class trait $class:ident $(: $parent:ident),* { $($body:tt)+ }
     ) => {
         __objc_class_trait! {
             @class: $class;
@@ -42,6 +42,122 @@ macro_rules! __objc_msg_args {
 }
 
 #[macro_export]
+macro_rules! __objc_expand_method {
+    {
+        @pass: $pass:ident! { @_ $($pass_args:tt)* };
+        @body: {
+            fn $fn_name:ident(&self) $(-> $fn_ret:ty),*
+                => [self, $msg_sel:ident] $(-> $msg_ret:ty),*;
+        };
+    } => {
+        $pass! {
+            @fn {
+                @name: $fn_name;
+                @args: [];
+                @ret: [$($fn_ret),*];
+                @msg_args: [];
+                @msg_ret: [$($msg_ret),*];
+                @msg_sel: sel!($msg_sel);
+                @qualifiers: [];
+            }
+            $($pass_args)*
+        }
+    };
+
+    {
+        @pass: $pass:ident! { @_ $($pass_args:tt)* };
+        @body: {
+            unsafe fn $fn_name:ident(&self) $(-> $fn_ret:ty),*
+                => [self, $msg_sel:ident] $(-> $msg_ret:ty),*;
+        };
+    } => {
+        $pass! {
+            @fn {
+                @name: $fn_name;
+                @args: [];
+                @ret: [$($fn_ret),*];
+                @msg_args: [];
+                @msg_ret: [$($msg_ret),*];
+                @msg_sel: sel!($msg_sel);
+                @qualifiers: [unsafe ];
+            }
+            $($pass_args)*
+        }
+    };
+
+    {
+        @pass: $pass:ident! { @_ $($pass_args:tt)* };
+        @body: {
+            fn $fn_name:ident(&self $(, $fn_arg:ident: $fn_arg_ty:ty)+) $(-> $fn_ret:ty),*
+                => [self, $($msg_sel:ident: ($msg_arg:ident: $msg_arg_ty:ty))+] $(-> $msg_ret:ty),*;
+        };
+    } => {
+        $pass! {
+            @fn {
+                @name: $fn_name;
+                @args: [$($fn_arg: $fn_arg_ty),+];
+                @ret: [$($fn_ret),*];
+                @msg_args: [$($msg_arg: $msg_arg_ty),+];
+                @msg_ret: [$($msg_ret),*];
+                @msg_sel: sel!($($msg_sel:)+);
+                @qualifiers: [];
+            }
+            $($pass_args)*
+        }
+    };
+
+    {
+        @pass: $pass:ident! { @_ $($pass_args:tt)* };
+        @body: {
+            unsafe fn $fn_name:ident(&self $(, $fn_arg:ident: $fn_arg_ty:ty)+) $(-> $fn_ret:ty),*
+                => [self, $($msg_sel:ident: ($msg_arg:ident: $msg_arg_ty:ty))+] $(-> $msg_ret:ty),*;
+        };
+    } => {
+        $pass! {
+            @fn {
+                @name: $fn_name;
+                @args: [$($fn_arg: $fn_arg_ty),+];
+                @ret: [$($fn_ret),*];
+                @msg_args: [$($msg_arg: $msg_arg_ty),+];
+                @msg_ret: [$($msg_ret),*];
+                @msg_sel: sel!($($msg_sel:)+);
+                @qualifiers: [unsafe];
+            }
+            $($pass_args)*
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! __objc_class_trait_add_fn {
+    {
+        @fn { $($new_fn:tt)* };
+        @class_trait: {
+            @base: $base:ty;
+            @class: $class:ident;
+            @fns: [$($fns:tt)*];
+            @parent: [$($parent:ident),*];
+            @sub: $sub:ident;
+            @vis: [$($vis:ident),*];
+            body: { $($body:tt)* };
+        };
+    } => {
+        __objc_class_trait! {
+            @base: $base;
+            @class: $class;
+            @fns: [
+                $($fns)*
+                @fn { $($new_fn)* };
+            ];
+            @parent: [$($parent),*];
+            @sub: $sub;
+            @vis: [$($vis),*];
+            body: { $($body)* };
+        }
+    }
+}
+
+#[macro_export]
 macro_rules! __objc_class_trait {
     {
         @class: $class:ident;
@@ -67,6 +183,8 @@ macro_rules! __objc_class_trait {
         }
     };
 
+
+
     (
         @base: $base:ty;
         @class: $class:ident;
@@ -75,34 +193,31 @@ macro_rules! __objc_class_trait {
         @sub: $sub:ident;
         @vis: [$($vis:ident),*];
         body: {
-            fn $fn_name:ident(&self) $(-> $fn_ret:ty),*
-                => [self, $msg_sel:ident] $(-> $msg_ret:ty),*;
+            fn $fn_name:ident($($args:tt)*) $(-> $fn_ret:ty),*
+                => [$($msg:tt)*] $(-> $msg_ret:ty),*;
             $($body_rest:tt)*
         };
     ) => {
-        __objc_class_trait! {
-            @base: $base;
-            @class: $class;
-            @fns: [
-                $($fns)*
-                @fn {
-                    @name: $fn_name;
-                    @args: [];
-                    @ret: [$($fn_ret),*];
-                    @msg_args: [];
-                    @msg_ret: [$($msg_ret),*];
-                    @msg_sel: sel!($msg_sel);
-                    @qualifiers: [];
+        __objc_expand_method! {
+            @pass: __objc_class_trait_add_fn! {
+                @_;
+                @class_trait: {
+                    @base: $base;
+                    @class: $class;
+                    @fns: [$($fns)*];
+                    @parent: [$($parent),*];
+                    @sub: $sub;
+                    @vis: [$($vis),*];
+                    body: { $($body_rest)* };
                 };
-            ];
-            @parent: [$($parent),*];
-            @sub: $sub;
-            @vis: [$($vis),*];
-            body: {
-                $($body_rest)*
+            };
+            @body: {
+                fn $fn_name($($args)*) $(-> $fn_ret),*
+                    => [$($msg)*] $(-> $msg_ret),*;
             };
         }
     };
+
     (
         @base: $base:ty;
         @class: $class:ident;
@@ -111,106 +226,31 @@ macro_rules! __objc_class_trait {
         @sub: $sub:ident;
         @vis: [$($vis:ident),*];
         body: {
-            unsafe fn $fn_name:ident(&self) $(-> $fn_ret:ty),*
-                => [self, $msg_sel:ident] $(-> $msg_ret:ty),*;
+            unsafe fn $fn_name:ident($($args:tt)*) $(-> $fn_ret:ty),*
+                => [$($msg:tt)*] $(-> $msg_ret:ty),*;
             $($body_rest:tt)*
         };
     ) => {
-        __objc_class_trait! {
-            @base: $base;
-            @class: $class;
-            @fns: [
-                $($fns)*
-                @fn {
-                    @name: $fn_name;
-                    @args: [];
-                    @ret: [$($fn_ret),*];
-                    @msg_args: [];
-                    @msg_ret: [$($msg_ret),*];
-                    @msg_sel: sel!($msg_sel);
-                    @qualifiers: [unsafe];
+        __objc_expand_method! {
+            @pass: __objc_class_trait_add_fn! {
+                @_;
+                @class_trait: {
+                    @base: $base;
+                    @class: $class;
+                    @fns: [$($fns)*];
+                    @parent: [$($parent),*];
+                    @sub: $sub;
+                    @vis: [$($vis),*];
+                    body: { $($body_rest)* };
                 };
-            ];
-            @parent: [$($parent),*];
-            @sub: $sub;
-            @vis: [$($vis),*];
-            body: {
-                $($body_rest)*
+            };
+            @body: {
+                unsafe fn $fn_name($($args)*) $(-> $fn_ret),*
+                    => [$($msg)*] $(-> $msg_ret),*;
             };
         }
     };
-    (
-        @base: $base:ty;
-        @class: $class:ident;
-        @fns: [$($fns:tt)*];
-        @parent: [$($parent:ident),*];
-        @sub: $sub:ident;
-        @vis: [$($vis:ident),*];
-        body: {
-            fn $fn_name:ident(&self $(, $fn_arg:ident: $fn_arg_ty:ty)+) $(-> $fn_ret:ty),*
-                => [self, $($msg_sel:ident: ($msg_arg:ident: $msg_arg_ty:ty))+] $(-> $msg_ret:ty),*;
-            $($body_rest:tt)*
-        };
-    ) => {
-        __objc_class_trait! {
-            @base: $base;
-            @class: $class;
-            @fns: [
-                $($fns)*
-                @fn {
-                    @name: $fn_name;
-                    @args: [$($fn_arg: $fn_arg_ty),+];
-                    @ret: [$($fn_ret),*];
-                    @msg_args: [$($msg_arg: $msg_arg_ty),+];
-                    @msg_ret: [$($msg_ret),*];
-                    @msg_sel: sel!($($msg_sel:)+);
-                    @qualifiers: [];
-                };
-            ];
-            @parent: [$($parent),*];
-            @sub: $sub;
-            @vis: [$($vis),*];
-            body: {
-                $($body_rest)*
-            };
-        }
-    };
-    (
-        @base: $base:ty;
-        @class: $class:ident;
-        @fns: [$($fns:tt)*];
-        @parent: [$($parent:ident),*];
-        @sub: $sub:ident;
-        @vis: [$($vis:ident),*];
-        body: {
-            unsafe fn $fn_name:ident(&self $(, $fn_arg:ident: $fn_arg_ty:ty)+) $(-> $fn_ret:ty),*
-                => [self, $($msg_sel:ident: ($msg_arg:ident: $msg_arg_ty:ty))+] $(-> $msg_ret:ty),*;
-            $($body_rest:tt)*
-        };
-    ) => {
-        __objc_class_trait! {
-            @base: $base;
-            @class: $class;
-            @fns: [
-                $($fns)*
-                @fn {
-                    @name: $fn_name;
-                    @args: [$($fn_arg: $fn_arg_ty),+];
-                    @ret: [$($fn_ret),*];
-                    @msg_args: [$($msg_arg: $msg_arg_ty),+];
-                    @msg_ret: [$($msg_ret),*];
-                    @msg_sel: sel!($($msg_sel:)+);
-                    @qualifiers: [unsafe];
-                };
-            ];
-            @parent: [$($parent),*];
-            @sub: $sub;
-            @vis: [$($vis),*];
-            body: {
-                $($body_rest)*
-            };
-        }
-    };
+
 
 
     (
