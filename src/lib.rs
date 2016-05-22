@@ -4,6 +4,7 @@
 extern crate objc_id;
 extern crate objc_exception;
 
+use std::mem;
 use objc::runtime as rt;
 
 pub use objc_id::{Id, WeakId, ShareId, Ownership, Owned, Shared};
@@ -27,6 +28,36 @@ extern { }
 
 #[link(name = "AppKit", kind = "framework")]
 extern { }
+
+
+
+// NOTE: The type of `OptionSel` is used for Objective-C `SEL`s that
+//       can be null. The safety of its implementation *depends* on
+//       the `objc::runtime::Sel` type containing a single pointer!
+#[derive(PartialEq)]
+pub struct OptionSel {
+    sel: rt::Sel
+}
+
+impl OptionSel {
+    fn from_sel(sel: rt::Sel) -> OptionSel {
+        OptionSel {
+            sel: sel
+        }
+    }
+
+    fn none() -> OptionSel {
+        OptionSel {
+            sel: unsafe { mem::zeroed() }
+        }
+    }
+}
+
+unsafe impl objc::Encode for OptionSel {
+    fn encode() -> objc::Encoding {
+        rt::Sel::encode()
+    }
+}
 
 
 
