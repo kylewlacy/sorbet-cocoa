@@ -1,7 +1,7 @@
 use objc;
 use objc::runtime as rt;
 use {AnyObject, Object, ShareId, RawObjCObject, NSResponder, IsNSResponder,
-     NSApplicationDelegate, NSApplicationActivationPolicy};
+     NSMenu, NSApplicationDelegate, NSApplicationActivationPolicy};
 
 #[repr(C)]
 pub struct NSApplication {
@@ -26,6 +26,8 @@ impl Object for NSApplication {
 
 pub trait IsNSApplication: IsNSResponder {
     fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>);
+    fn main_menu(&self) -> Option<ShareId<NSMenu>>;
+    fn set_main_menu(&self, main_menu: Option<ShareId<NSMenu>>);
     fn activate_ignoring_other_apps(&self, flag: bool);
     fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool;
     fn run(&self);
@@ -47,6 +49,10 @@ objc! {
 
         fn set_delegate(&self, delegate: ShareId<NSApplicationDelegate>)
             => [self, setDelegate:(delegate: *mut AnyObject)];
+        fn main_menu(&self) -> Option<ShareId<NSMenu>>
+            => [self, mainMenu] -> *mut AnyObject;
+        fn set_main_menu(&self, main_menu: Option<ShareId<NSMenu>>)
+            => [self, setMainMenu:(menu: *mut AnyObject)];
         fn activate_ignoring_other_apps(&self, flag: bool)
             => [self, activateIgnoringOtherApps:(flag: rt::BOOL)];
         fn set_activation_policy(&self, activation_policy: NSApplicationActivationPolicy) -> bool
