@@ -61,7 +61,7 @@ objc! {
         fn is_kind_of_class(&self, class: &rt::Class) -> bool
             => [self, isKindOfClass:(class: *const rt::Class)] -> rt::BOOL;
         fn is_member_of_class(&self, class: &rt::Class) -> bool
-            => [self, isMemberofClass:(class: *const rt::Class)] -> rt::BOOL;
+            => [self, isMemberOfClass:(class: *const rt::Class)] -> rt::BOOL;
         fn responds_to_selector(&self, sel: rt::Sel) -> bool
             => [self, respondsToSelector:(sel: rt::Sel)] -> rt::BOOL;
         fn description(&self) -> String
