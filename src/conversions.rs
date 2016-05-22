@@ -3,7 +3,7 @@ use std::mem;
 use std::os::raw::{c_void, c_char};
 use std::ffi::{CStr, CString};
 use objc::runtime as rt;
-use {AnyObject, ShareId, Object};
+use {AnyObject, ShareId, Object, OptionSel};
 
 pub unsafe fn objc_to_rust<T, U>(x: T) -> U
     where T: ObjCInto<U>
@@ -118,6 +118,17 @@ impl ObjCInto<bool> for rt::BOOL {
     }
 }
 
+impl ObjCInto<Option<rt::Sel>> for OptionSel {
+    unsafe fn objc_into(self) -> Option<rt::Sel> {
+        if self == OptionSel::none() {
+            None
+        }
+        else {
+            Some(self.sel)
+        }
+    }
+}
+
 impl<T, U> ObjCInto<U> for T
     where T: Into<U>
 {
@@ -223,6 +234,15 @@ impl<T> IntoObjC<*mut AnyObject> for Option<ShareId<T>>
             None => {
                 ptr::null_mut()
             }
+        }
+    }
+}
+
+impl IntoObjC<OptionSel> for Option<rt::Sel> {
+    fn into_objc(self) -> OptionSel {
+        match self {
+            Some(sel) => OptionSel::from_sel(sel),
+            None => OptionSel::none()
         }
     }
 }
