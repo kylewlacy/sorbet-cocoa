@@ -1,6 +1,6 @@
 use objc;
 use objc::runtime as rt;
-use {AnyObject, AsAnyObject, RawObjCObject, Object};
+use {AnyObject, Id, AsAnyObject, RawObjCObject, Object};
 
 #[repr(C)]
 pub struct NSObject {
@@ -30,6 +30,17 @@ impl AsAnyObject for NSObject {
 
     fn any_mut(&mut self) -> &mut AnyObject {
         &mut self.super_
+    }
+}
+
+impl NSObject {
+    pub fn new() -> Id<Self> {
+        unsafe {
+            let ns_object = rt::Class::get("NSObject").unwrap();
+            let self_: *mut NSObject = msg_send![ns_object, alloc];
+            let self_: *mut NSObject = msg_send![self_, init];
+            Id::from_retained_ptr(self_)
+        }
     }
 }
 
