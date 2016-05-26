@@ -545,11 +545,15 @@ mod tests {
     trait IsMyObject: IsNSObject {
         fn foo(&self);
 
-        fn bar(&self, a: bool) { }
+        fn bar(&self, _a: bool) { }
 
         fn baz(&self, a: bool, b: &AnyObject) -> bool;
 
-        unsafe fn qux(&self, a: bool, b: &AnyObject, c: &AnyObject) -> *mut AnyObject { unimplemented!() }
+        unsafe fn qux(&self, _a: bool, _b: &AnyObject, _c: &AnyObject)
+            -> *mut AnyObject
+        {
+                unimplemented!()
+        }
     }
 
     #[derive(Default)]
