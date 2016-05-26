@@ -124,3 +124,13 @@ objc! {
             => [self, setTitle:(title: *mut AnyObject)];
     }
 }
+
+#[macro_export]
+macro_rules! NSWindow {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSWindow => $crate::SubNSWindow: NSResponder!;
+            $($args)*
+        }
+    };
+}

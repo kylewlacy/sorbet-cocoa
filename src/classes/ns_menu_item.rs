@@ -50,3 +50,13 @@ objc! {
         trait Sub = SubNSMenuItem;
     }
 }
+
+#[macro_export]
+macro_rules! NSMenuItem {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSMenuItem => $crate::SubNSMenuItem: NSObject!;
+            $($args)*
+        }
+    };
+}

@@ -64,3 +64,13 @@ objc! {
             => [self, run];
     }
 }
+
+#[macro_export]
+macro_rules! NSApplication {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSApplication => $crate::SubNSApplication: NSResponder!;
+            $($args)*
+        }
+    };
+}

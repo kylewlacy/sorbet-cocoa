@@ -77,3 +77,13 @@ objc! {
                          forItem:(item: *mut AnyObject)];
     }
 }
+
+#[macro_export]
+macro_rules! NSMenu {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSMenu => $crate::SubNSMenu: NSObject!;
+            $($args)*
+        }
+    };
+}

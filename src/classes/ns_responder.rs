@@ -132,3 +132,13 @@ objc! {
             => [self, otherMouseUp:(event: *mut AnyObject)];
     }
 }
+
+#[macro_export]
+macro_rules! NSResponder {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSResponder => $crate::SubNSResponder: NSObject!;
+            $($args)*
+        }
+    };
+}

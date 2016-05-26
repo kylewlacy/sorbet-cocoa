@@ -81,3 +81,15 @@ objc! {
             => [self, debugDescription] -> *mut AnyObject;
     }
 }
+
+// TODO: Generate this macro automatically in `objc!` (see:
+//       https://github.com/rust-lang/rust/issues/6994)
+#[macro_export]
+macro_rules! NSObject {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSObject => $crate::SubNSObject;
+            $($args)*
+        }
+    };
+}

@@ -116,3 +116,14 @@ objc! {
         fn window_will_load(&self) => [self, windowWillLoad];
     }
 }
+
+#[macro_export]
+macro_rules! NSWindowController {
+    ($($args:tt)*) => {
+        __objc_inheritance_for! {
+            $crate::NSWindowController =>
+                $crate::SubNSWindowController: NSResponder!;
+            $($args)*
+        }
+    };
+}

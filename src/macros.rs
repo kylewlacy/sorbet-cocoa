@@ -520,6 +520,61 @@ macro_rules! __objc_trait {
     }
 }
 
+// HACK: This macro is a workaround for the issue that "subclassing"
+//       with the `Object` trait in external crates doesn't compile (see:
+//       https://github.com/rust-lang/rust/issues/31844#issuecomment-221131352)
+#[macro_export]
+macro_rules! objc_inherit {
+    {
+        impl Object for $class:ty {
+            type Super = $super_:ident;
+
+            let super_ = self.$super_ref:ident;
+        }
+    } => {
+        $super_!(@class: $class; @super_ref: $super_ref;);
+    }
+}
+
+#[macro_export]
+macro_rules! __objc_inheritance_for {
+    {
+        $base:ty => $sub_trait:ty $(: $parent:ident!)*;
+        @class: $class:ty;
+        @super_ref: $super_ref:ident;
+    } => {
+        __objc_inheritance_for! {
+            $base => $sub_trait $(: $parent!)*;
+            @class: $class;
+            @super_ref: $super_ref;
+            @super_: $base;
+        }
+    };
+
+    {
+        $base:ty => $sub_trait:ty $(: $parent:ident!)*;
+        @class: $class:ty;
+        @super_ref: $super_ref:ident;
+        @super_: $super_:ty;
+    } => {
+        impl $sub_trait for $class {
+            type ClassSuper = $super_;
+
+            fn class_super_ref(&self) -> &Self::ClassSuper {
+                &self.$super_ref
+            }
+
+            fn class_super_mut(&mut self) -> &mut Self::ClassSuper {
+                &mut self.$super_ref
+            }
+        }
+
+        $(
+            $parent!(@class: $class; @super_ref: $super_ref; @super_: $super_;);
+        )*
+    };
+}
+
 // TODO: Write a proper test suite! This just tests the macro expansion
 //       itself (and not inputs/outputs)
 #[cfg(test)]
