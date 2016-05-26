@@ -96,7 +96,7 @@ impl Object for NSApplicationDelegate {
     }
 }
 
-pub trait IsNSApplicationDelegate {
+pub trait IsNSApplicationDelegate: IsNSObject {
     fn application_will_finish_launching(&self, notification: ShareId<NSNotification>) {
         NSApplicationDelegateDefaultImpl.application_will_finish_launching(notification)
     }
