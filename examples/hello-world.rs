@@ -3,7 +3,7 @@
 // Ported from:
 // https://gist.github.com/lucamarrocco/2b06c92e4e6df01de04b
 
-extern crate sorbet_cocoa as cocoa;
+#[macro_use] extern crate sorbet_cocoa as cocoa;
 
 use cocoa::{Duck, Id, ShareId,
             IsNSApplication, IsNSWindowController, IsNSWindow};
@@ -77,15 +77,11 @@ struct NiblessWindowController {
     super_: Id<cocoa::NSWindowController>
 }
 
-impl cocoa::Object for NiblessWindowController {
-    type Super = cocoa::NSWindowController;
+objc_inherit! {
+    impl Object for NiblessWindowController {
+        type Super = NSWindowController;
 
-    fn super_ref(&self) -> &Self::Super {
-        &self.super_
-    }
-
-    fn super_mut(&mut self) -> &mut Self::Super {
-        &mut self.super_
+        let super_ = self.super_;
     }
 }
 
