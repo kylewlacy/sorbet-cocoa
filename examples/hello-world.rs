@@ -9,6 +9,7 @@ use cocoa::{Duck, Id, ShareId,
             IsNSApplication, IsNSWindowController, IsNSWindow};
 
 struct AppDelegate {
+    super_: Id<cocoa::NSObject>,
     app: ShareId<cocoa::NSApplication>,
     controller: ShareId<cocoa::NSWindowController>
 }
@@ -17,10 +18,20 @@ impl AppDelegate {
     fn new(app: ShareId<cocoa::NSApplication>) -> Self {
         let controller = NiblessWindowController::new();
         let controller: Id<cocoa::NSWindowController> = controller.duck();
+
         AppDelegate {
+            super_: cocoa::NSObject::new(),
             app: app,
             controller: controller.share()
         }
+    }
+}
+
+objc_inherit! {
+    impl Object for AppDelegate {
+        type Super = NSObject;
+
+        let super_ = self.super_;
     }
 }
 
