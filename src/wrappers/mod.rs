@@ -6,7 +6,7 @@ use std::sync::Once;
 use objc;
 use objc::runtime as rt;
 use objc::declare as decl;
-use {AnyObject, Id, IsNSObject};
+use {AnyObject, Id, ShareId, IsNSObject};
 
 mod srb_object;
 mod srb_application_delegate;
@@ -86,6 +86,15 @@ pub trait Duck<T> {
 impl<T> Duck<Id<T>> for Id<T> {
     fn duck(self) -> Id<T> {
         self
+    }
+}
+
+impl<T, U> Duck<ShareId<U>> for T
+    where T: Duck<Id<U>>, U: objc::Message
+{
+    fn duck(self) -> ShareId<U> {
+        let id: Id<U> = self.duck();
+        id.share()
     }
 }
 

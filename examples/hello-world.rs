@@ -104,7 +104,7 @@ impl NiblessWindowController {
 fn main() {
     let app = cocoa::NSApplication::shared_application();
     let delegate = AppDelegate::new(app.clone()).duck();
-    unsafe { app.set_delegate(Some(delegate.share())); }
+    unsafe { app.set_delegate(Some(delegate)); }
 
     // let menu = Menu::new(app);
 
