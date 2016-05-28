@@ -16,7 +16,7 @@ pub use self::srb_object::*;
 pub use self::srb_application_delegate::*;
 pub use self::srb_window_controller::*;
 
-unsafe fn take_boxed<W>(self_: &mut W) -> Box<W::Boxed>
+pub unsafe fn take_boxed<W>(self_: &mut W) -> Box<W::Boxed>
     where W: SRBWrapper + objc::Message
 {
     let self_: &mut AnyObject = mem::transmute(self_);
@@ -26,7 +26,7 @@ unsafe fn take_boxed<W>(self_: &mut W) -> Box<W::Boxed>
     Box::from_raw(boxed_ptr)
 }
 
-unsafe fn get_boxed_ref<W>(self_: &W) -> &W::Boxed
+pub unsafe fn get_boxed_ref<W>(self_: &W) -> &W::Boxed
     where W: SRBWrapper + objc::Message
 {
     let self_: &AnyObject = mem::transmute(self_);
@@ -34,7 +34,7 @@ unsafe fn get_boxed_ref<W>(self_: &W) -> &W::Boxed
     &*boxed_ptr
 }
 
-unsafe fn get_boxed_mut<W>(self_: &mut W) -> &mut W::Boxed
+pub unsafe fn get_boxed_mut<W>(self_: &mut W) -> &mut W::Boxed
     where W: SRBWrapper + objc::Message
 {
     let self_: &AnyObject = mem::transmute(self_);
@@ -42,7 +42,7 @@ unsafe fn get_boxed_mut<W>(self_: &mut W) -> &mut W::Boxed
     &mut *boxed_ptr
 }
 
-unsafe fn new_wrapper_with_boxed<W>(boxed: Box<W::Boxed>) -> *mut W
+pub unsafe fn new_wrapper_with_boxed<W>(boxed: Box<W::Boxed>) -> *mut W
     where W: SRBWrapper + objc::Message
 {
     let class = W::class();
