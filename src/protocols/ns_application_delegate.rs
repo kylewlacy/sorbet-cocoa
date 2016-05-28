@@ -122,7 +122,7 @@ impl NSApplicationDelegateDefaultImpl {
     }
 }
 
-objc! {
+objc_trait! {
     pub unsafe objc trait IsNSApplicationDelegate: IsNSObject {
         type Base = NSApplicationDelegate;
         trait Sub = SubNSApplicationDelegate;

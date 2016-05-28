@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! objc {
+macro_rules! objc_trait {
     (
         pub unsafe objc trait $name:ident $(: $parent:ident),* { $($body:tt)+ }
     ) => {
@@ -622,7 +622,7 @@ mod tests {
         }
     }
 
-    objc! {
+    objc_trait! {
         unsafe objc trait IsMyObject: IsNSObject {
             type Base = MyObject;
             trait Sub = SubMyObject;

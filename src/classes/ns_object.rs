@@ -56,7 +56,7 @@ pub trait IsNSObject {
     fn debug_description(&self) -> String;
 }
 
-objc! {
+objc_trait! {
     pub unsafe objc trait IsNSObject {
         type Base = NSObject;
         trait Sub = SubNSObject;
@@ -82,7 +82,7 @@ objc! {
     }
 }
 
-// TODO: Generate this macro automatically in `objc!` (see:
+// TODO: Generate this macro automatically in `objc_trait!` (see:
 //       https://github.com/rust-lang/rust/issues/6994)
 #[macro_export]
 macro_rules! NSObject {

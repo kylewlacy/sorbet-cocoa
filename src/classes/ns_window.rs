@@ -109,7 +109,7 @@ pub trait IsNSWindow: IsNSResponder {
     fn set_title(&self, title: &str);
 }
 
-objc! {
+objc_trait! {
     pub unsafe objc trait IsNSWindow: IsNSResponder {
         type Base = NSWindow;
         trait Sub = SubNSWindow;

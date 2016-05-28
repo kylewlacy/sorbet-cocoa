@@ -52,7 +52,7 @@ pub trait IsNSMenu: IsNSObject {
                             item: ShareId<NSMenuItem>);
 }
 
-objc! {
+objc_trait! {
     pub unsafe objc trait IsNSMenu: IsNSObject {
         type Base = NSMenu;
         trait Sub = SubNSMenu;

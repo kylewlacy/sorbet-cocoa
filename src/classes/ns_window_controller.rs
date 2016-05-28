@@ -98,7 +98,7 @@ pub trait IsNSWindowController: IsNSResponder {
     // fn dismiss_controller(sender: Option<ShareId<NSObject>>);
 }
 
-objc! {
+objc_trait! {
     pub unsafe objc trait IsNSWindowController: IsNSResponder {
         type Base = NSWindowController;
         trait Sub = SubNSWindowController;

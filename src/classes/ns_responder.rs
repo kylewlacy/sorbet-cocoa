@@ -77,7 +77,7 @@ pub trait IsNSResponder: IsNSObject {
     // fn delete_word_forward(&self, sender: Option<ShareId<NSObject>>);
 }
 
-objc! {
+objc_trait! {
     pub unsafe objc trait IsNSResponder: IsNSObject {
         type Base = NSResponder;
         trait Sub = SubNSResponder;
