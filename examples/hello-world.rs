@@ -3,10 +3,11 @@
 // Ported from:
 // https://gist.github.com/lucamarrocco/2b06c92e4e6df01de04b
 
+#[macro_use] extern crate objc;
 #[macro_use] extern crate sorbet_cocoa as cocoa;
 
 use cocoa::{Duck, Id, ShareId,
-            IsNSApplication, IsNSWindowController, IsNSWindow};
+            IsNSApplication, IsNSWindowController, IsNSWindow, IsNSMenu};
 
 struct AppDelegate {
     super_: Id<cocoa::NSObject>,
@@ -51,38 +52,26 @@ impl cocoa::IsNSApplicationDelegate for AppDelegate {
     }
 }
 
-// struct Menu {
-//     app: ShareId<cocoa::NSApplication>
-// }
-//
-// impl Menu {
-//     fn new(mut app: cocoa::NSApplication) -> Self {
-//         app.menu = Menu::main_menu();
-//
-//         Menu {
-//             app: app
-//         }
-//     }
-//
-//     fn main_menu() -> cocoa::NSMenu {
-//         let tree = [
-//             ("Apple", cocoa::NSMenuItem("Quit", Some("terminate:"), "q"))
-//         ];
-//
-//         let mut result = NSMenu::new("MainMenu");
-//         for (title, items) in &tree {
-//             let menu = NSMenu::new(title);
-//             if let item = result.add_item_with_title(title, None, "") {
-//                 result.set_submenu(menu, item);
-//                 for item in items {
-//                     menu.add_item(item)
-//                 }
-//             }
-//         }
-//
-//         result
-//     }
-// }
+fn set_main_menu(app: &cocoa::NSApplication) {
+    let tree = vec![
+        ("Apple", vec![
+            cocoa::NSMenuItem::new("Quit", Some(sel!(terminate:)), "q")
+        ])
+    ];
+
+    let main_menu = cocoa::NSMenu::new("MainMenu");
+    for (title, items) in tree {
+        let submenu = cocoa::NSMenu::new(title).share();
+        if let Some(item) = main_menu.add_item_with_title_action_key_equivalent(title, None, "") {
+            main_menu.set_submenu_for_item(Some(submenu.clone()), item);
+            for item in items {
+                submenu.add_item(item.share())
+            }
+        }
+    }
+
+    app.set_main_menu(Some(main_menu.share()));
+}
 
 struct NiblessWindowController {
     super_: Id<cocoa::NSWindowController>
@@ -117,7 +106,7 @@ fn main() {
     let delegate = AppDelegate::new(app.clone()).duck();
     unsafe { app.set_delegate(Some(delegate)); }
 
-    // let menu = Menu::new(app);
+    set_main_menu(&app);
 
     app.set_activation_policy(cocoa::NSApplicationActivationPolicy::Regular);
     app.run();
