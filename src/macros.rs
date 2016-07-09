@@ -532,7 +532,10 @@ macro_rules! objc_inherit {
             let super_ = self.$super_ref:ident;
         }
     } => {
-        $super_!(@class: $class; @super_ref: $super_ref;);
+        $super_!({
+            @class: $class;
+            @super_ref: $super_ref;
+        });
     }
 }
 
@@ -540,22 +543,28 @@ macro_rules! objc_inherit {
 macro_rules! __objc_inheritance_for {
     {
         $base:ty => $sub_trait:ty $(: $parent:ident!)*;
-        @class: $class:ty;
-        @super_ref: $super_ref:ident;
+        {
+            @class: $class:ty;
+            @super_ref: $super_ref:ident;
+        }
     } => {
         __objc_inheritance_for! {
             $base => $sub_trait $(: $parent!)*;
-            @class: $class;
-            @super_ref: $super_ref;
-            @super_: $base;
+            {
+                @class: $class;
+                @super_ref: $super_ref;
+                @super_: $base;
+            }
         }
     };
 
     {
         $base:ty => $sub_trait:ty $(: $parent:ident!)*;
-        @class: $class:ty;
-        @super_ref: $super_ref:ident;
-        @super_: $super_:ty;
+        {
+            @class: $class:ty;
+            @super_ref: $super_ref:ident;
+            @super_: $super_:ty;
+        }
     } => {
         impl $sub_trait for $class {
             type ClassSuper = $super_;
@@ -570,7 +579,11 @@ macro_rules! __objc_inheritance_for {
         }
 
         $(
-            $parent!(@class: $class; @super_ref: $super_ref; @super_: $super_;);
+            $parent!({
+                @class: $class;
+                @super_ref: $super_ref;
+                @super_: $super_;
+            });
         )*
     };
 }

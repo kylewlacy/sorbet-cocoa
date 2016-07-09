@@ -80,10 +80,10 @@ objc_trait! {
 
 #[macro_export]
 macro_rules! NSMenu {
-    ($($args:tt)*) => {
+    ($args:tt) => {
         __objc_inheritance_for! {
             $crate::NSMenu => $crate::SubNSMenu: NSObject!;
-            $($args)*
+            $args
         }
     };
 }

@@ -67,10 +67,10 @@ objc_trait! {
 
 #[macro_export]
 macro_rules! NSApplication {
-    ($($args:tt)*) => {
+    ($args:tt) => {
         __objc_inheritance_for! {
             $crate::NSApplication => $crate::SubNSApplication: NSResponder!;
-            $($args)*
+            $args
         }
     };
 }

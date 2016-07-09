@@ -86,10 +86,10 @@ objc_trait! {
 //       https://github.com/rust-lang/rust/issues/6994)
 #[macro_export]
 macro_rules! NSObject {
-    ($($args:tt)*) => {
+    ($args:tt) => {
         __objc_inheritance_for! {
             $crate::NSObject => $crate::SubNSObject;
-            $($args)*
+            $args
         }
     };
 }

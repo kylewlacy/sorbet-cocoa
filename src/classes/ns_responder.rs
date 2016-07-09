@@ -135,10 +135,10 @@ objc_trait! {
 
 #[macro_export]
 macro_rules! NSResponder {
-    ($($args:tt)*) => {
+    ($args:tt) => {
         __objc_inheritance_for! {
             $crate::NSResponder => $crate::SubNSResponder: NSObject!;
-            $($args)*
+            $args
         }
     };
 }

@@ -53,10 +53,10 @@ objc_trait! {
 
 #[macro_export]
 macro_rules! NSMenuItem {
-    ($($args:tt)*) => {
+    ($args:tt) => {
         __objc_inheritance_for! {
             $crate::NSMenuItem => $crate::SubNSMenuItem: NSObject!;
-            $($args)*
+            $args
         }
     };
 }

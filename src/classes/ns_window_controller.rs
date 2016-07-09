@@ -119,11 +119,11 @@ objc_trait! {
 
 #[macro_export]
 macro_rules! NSWindowController {
-    ($($args:tt)*) => {
+    ($args:tt) => {
         __objc_inheritance_for! {
             $crate::NSWindowController =>
                 $crate::SubNSWindowController: NSResponder!;
-            $($args)*
+            $args
         }
     };
 }
