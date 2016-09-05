@@ -1,4 +1,4 @@
-#![feature(specialization, type_macros)]
+#![feature(specialization)]
 
 #[macro_use] extern crate objc;
 extern crate objc_id;
